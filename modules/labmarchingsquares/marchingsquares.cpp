@@ -153,6 +153,7 @@ void MarchingSquares::process()
     // i is in [0, dims.x-1] and j is in [0, dims.y-1]
     float valueat00 = getInputValue(vr, dims, 0, 0);
     LogProcessorInfo("Value at (0,0) is: " << valueat00);
+    LogProcessorInfo("The number of dimensions are : " << dims);
     // You can assume that dims.z = 1 and do not need to consider others cases
 
     // TODO (Bonus) Gaussian filter
@@ -171,18 +172,32 @@ void MarchingSquares::process()
     if (propShowGrid.get())
     {
         // TODO: Add grid lines of the given color 
-
+      
         // The function drawLineSegments creates two vertices at the specified positions, 
         // that are placed into the Vertex vector defining our mesh. 
         // An index buffer specifies which of those vertices should be grouped into to make up lines/trianges/quads.
         // Here two vertices make up a line segment.
         auto indexBufferGrid = mesh->addIndexBuffer(DrawType::Lines, ConnectivityType::None);
 
+        int x_max = dims[0]-1;
+        for(int i=0; i<=x_max; i++){
+            float currPoint = (float)i/x_max;
+            LogProcessorInfo("Current point is: " << currPoint);
+            drawLineSegment(vec2(0, currPoint), vec2(1, currPoint), propGridColor.get(), indexBufferGrid, vertices);
+        }
+
+        int y_max = dims[1]-1;
+        for(int i=0; i<=y_max; i++){
+            float currPoint = (float)i/x_max;
+            drawLineSegment(vec2(currPoint, 0), vec2(currPoint, 1), propGridColor.get(), indexBufferGrid, vertices);
+        }
+
         // Draw a line segment from v1 to v2 with a color, the coordinates in the final 
         // image range from 0 to 1 for both x and y
-        vec2 v1 = vec2(0.5, 0.5);
-        vec2 v2 = vec2(0.7, 0.7);
-        drawLineSegment(v1, v2, propGridColor.get(), indexBufferGrid, vertices);
+     
+        // vec2 v1 = vec2(0.5, 0.5);
+        // vec2 v2 = vec2(0.7, 0.7);
+        // drawLineSegment(v1, v2, propGridColor.get(), indexBufferGrid, vertices);
     }
 
     // Iso contours
