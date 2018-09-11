@@ -167,6 +167,9 @@ void MarchingSquares::process()
     // getInputValue(vrSmoothed, dims, 0, 0);
 
     // Grid
+    int xMax = dims[0]-1;
+    int yMax = dims[1]-1;
+    auto indexBufferGrid = mesh->addIndexBuffer(DrawType::Lines, ConnectivityType::None);
 
     // Properties are accessed with propertyName.get() 
     if (propShowGrid.get())
@@ -177,18 +180,15 @@ void MarchingSquares::process()
         // that are placed into the Vertex vector defining our mesh. 
         // An index buffer specifies which of those vertices should be grouped into to make up lines/trianges/quads.
         // Here two vertices make up a line segment.
-        auto indexBufferGrid = mesh->addIndexBuffer(DrawType::Lines, ConnectivityType::None);
 
-        int x_max = dims[0]-1;
-        for(int i=0; i<=x_max; i++){
-            float currPoint = (float)i/x_max;
-            LogProcessorInfo("Current point is: " << currPoint);
+        
+        for(int i=0; i<=xMax; i++){
+            float currPoint = (float)i/xMax;
             drawLineSegment(vec2(0, currPoint), vec2(1, currPoint), propGridColor.get(), indexBufferGrid, vertices);
         }
 
-        int y_max = dims[1]-1;
-        for(int i=0; i<=y_max; i++){
-            float currPoint = (float)i/x_max;
+        for(int i=0; i<=yMax; i++){
+            float currPoint = (float)i/yMax;
             drawLineSegment(vec2(currPoint, 0), vec2(currPoint, 1), propGridColor.get(), indexBufferGrid, vertices);
         }
 
@@ -202,8 +202,81 @@ void MarchingSquares::process()
 
     // Iso contours
 
+    float xScale = 1.0 / xMax;
+    float yScale = 1.0 / yMax;
+
+
     if (propMultiple.get() == 0)
     {
+        for(int x=0; x<=xMax-1; ++x)
+            for(int y=0; y<=yMax-1; ++y){
+                float currX = x*xScale;
+                float currY = y*yScale;
+
+                float value00 = getInputValue(vr, dims, x, y);
+                float value01 = getInputValue(vr, dims, x, y+1);
+                float value10 = getInputValue(vr, dims, x+1, y);
+                float value11 = getInputValue(vr, dims, x+1, y+1);
+                LogProcessorInfo("vals: "  << value00 << " "<< value01 << " " << value10 << " " << value11);
+
+                std::vector<float> isoXs;
+                std::vector<float> isoYs;
+
+                if(isoLineCross(value00, value01, propIsoValue)){
+                    float distance = value01 - value00;
+
+                    float yCross = currY + ((propIsoValue-value00)/distance)*yScale;
+                    isoXs.push_back(currX);
+                    isoYs.push_back(yCross); 
+                }
+                if(isoLineCross(value00, value10, propIsoValue)){
+                    float distance = value10 - value00;
+
+                    float xCross = currX + ((propIsoValue-value00)/distance)*xScale; 
+                    isoXs.push_back(xCross);
+                    isoYs.push_back(currY); 
+                }
+                if(isoLineCross(value01, value11, propIsoValue)){
+                    float distance = value11 - value01;
+
+                    float xCross = currX + ((propIsoValue-value01)/distance)*xScale; 
+                    isoXs.push_back(xCross); 
+                    isoYs.push_back(currY + yScale); 
+                }
+                if(isoLineCross(value10, value11, propIsoValue)){
+                    float distance = value11 - value10;
+
+                    float yCross = currY + ((propIsoValue-value10)/distance)*yScale; 
+                    isoXs.push_back(currX + xScale); 
+                    isoYs.push_back(yCross); 
+                }
+
+                if(isoXs.size() == 2){
+                    vec2 v1 = vec2(isoXs[0], isoYs[0]);
+                    vec2 v2 = vec2(isoXs[1], isoYs[1]);
+                    drawLineSegment(v1, v2, propIsoColor.get(), indexBufferGrid, vertices);
+                }
+                else if(isoXs.size() == 4){
+                    float avg = (value00 + value01 + value10 + value11)/4;
+                    if((avg >= propIsoValue) == (value00 >= propIsoValue)){
+                        vec2 v1 = vec2(isoXs[0], isoYs[0]);
+                        vec2 v2 = vec2(isoXs[2], isoYs[2]);
+                        drawLineSegment(v1, v2, propIsoColor.get(), indexBufferGrid, vertices);
+                        vec2 v3 = vec2(isoXs[1], isoYs[1]);
+                        vec2 v4 = vec2(isoXs[3], isoYs[3]);
+                        drawLineSegment(v3, v4, propIsoColor.get(), indexBufferGrid, vertices);
+                    }else{
+                        vec2 v1 = vec2(isoXs[0], isoYs[0]);
+                        vec2 v2 = vec2(isoXs[1], isoYs[1]);
+                        drawLineSegment(v1, v2, propIsoColor.get(), indexBufferGrid, vertices);
+                        vec2 v3 = vec2(isoXs[2], isoYs[2]);
+                        vec2 v4 = vec2(isoXs[3], isoYs[3]);
+                        drawLineSegment(v3, v4, propIsoColor.get(), indexBufferGrid, vertices);
+                    }
+                }   
+
+            }
+
         // TODO: Draw a single isoline at the specified isovalue (propIsoValue) 
         // and color it with the specified color (propIsoColor)
     }
@@ -255,6 +328,10 @@ void MarchingSquares::drawLineSegment(const vec2& v1, const vec2& v2, const vec4
     // Add second vertex
     indexBuffer->add(static_cast<std::uint32_t>(vertices.size()));
     vertices.push_back({vec3(v2[0], v2[1], 0), vec3(0, 0, 1), vec3(v2[0], v2[1], 0), color});
+}
+
+bool MarchingSquares::isoLineCross(float value1, float value2, float isoValue){
+    return (value1 > isoValue) != (value2 > isoValue);
 }
 
 } // namespace

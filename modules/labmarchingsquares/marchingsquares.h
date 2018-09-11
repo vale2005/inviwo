@@ -80,7 +80,8 @@ protected:
     void drawLineSegment(const vec2& v1, const vec2& v2, const vec4& color,
         IndexBufferRAM* indexBuffer, std::vector<BasicMesh::Vertex>& vertices);
 	
-
+    bool isoLineCross(float value1, float value2, float isoValue);
+    
 //Ports
 public:
     // Input data
