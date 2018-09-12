@@ -167,8 +167,8 @@ void MarchingSquares::process()
     // getInputValue(vrSmoothed, dims, 0, 0);
 
     // Grid
-    int xMax = dims[0]-1;
-    int yMax = dims[1]-1;
+    int xMaxInd = dims.x-1;
+    int yMaxInd = dims.y-1;
     auto indexBufferGrid = mesh->addIndexBuffer(DrawType::Lines, ConnectivityType::None);
 
     // Properties are accessed with propertyName.get() 
@@ -182,13 +182,13 @@ void MarchingSquares::process()
         // Here two vertices make up a line segment.
 
         
-        for(int i=0; i<=xMax; i++){
-            float currPoint = (float)i/xMax;
+        for(int i=0; i<=xMaxInd; i++){
+            float currPoint = (float)i/xMaxInd;
             drawLineSegment(vec2(0, currPoint), vec2(1, currPoint), propGridColor.get(), indexBufferGrid, vertices);
         }
 
-        for(int i=0; i<=yMax; i++){
-            float currPoint = (float)i/yMax;
+        for(int i=0; i<=yMaxInd; i++){
+            float currPoint = (float)i/yMaxInd;
             drawLineSegment(vec2(currPoint, 0), vec2(currPoint, 1), propGridColor.get(), indexBufferGrid, vertices);
         }
 
@@ -202,14 +202,16 @@ void MarchingSquares::process()
 
     // Iso contours
 
-    float xScale = 1.0 / xMax;
-    float yScale = 1.0 / yMax;
+    float xScale = 1.0 / xMaxInd;
+    float yScale = 1.0 / yMaxInd;
 
+    int xCellCount = xMaxInd - 1;
+    int yCellCount = yMaxInd - 1; 
 
     if (propMultiple.get() == 0)
     {
-        for(int x=0; x<=xMax-1; ++x)
-            for(int y=0; y<=yMax-1; ++y){
+        for(int x=0; x<=xCellCount; ++x)
+            for(int y=0; y<=yCellCount; ++y){
                 float currX = x*xScale;
                 float currY = y*yScale;
 
@@ -217,7 +219,6 @@ void MarchingSquares::process()
                 float value01 = getInputValue(vr, dims, x, y+1);
                 float value10 = getInputValue(vr, dims, x+1, y);
                 float value11 = getInputValue(vr, dims, x+1, y+1);
-                LogProcessorInfo("vals: "  << value00 << " "<< value01 << " " << value10 << " " << value11);
 
                 std::vector<float> isoXs;
                 std::vector<float> isoYs;
