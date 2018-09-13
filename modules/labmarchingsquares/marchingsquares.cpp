@@ -258,37 +258,40 @@ void MarchingSquares::process()
                     drawLineSegment(v1, v2, propIsoColor.get(), indexBufferGrid, vertices);
                 }
                 else if(isoXs.size() == 4){
-                    // float avg = (value00 + value01 + value10 + value11)/4;
-                    // if((avg >= propIsoValue) == (value00 >= propIsoValue)){
-                    //     vec2 v1 = vec2(isoXs[0], isoYs[0]);
-                    //     vec2 v2 = vec2(isoXs[2], isoYs[2]);
-                    //     drawLineSegment(v1, v2, propIsoColor.get(), indexBufferGrid, vertices);
-                    //     vec2 v3 = vec2(isoXs[1], isoYs[1]);
-                    //     vec2 v4 = vec2(isoXs[3], isoYs[3]);
-                    //     drawLineSegment(v3, v4, propIsoColor.get(), indexBufferGrid, vertices);
-                    // }else{
-                    //     vec2 v1 = vec2(isoXs[0], isoYs[0]);
-                    //     vec2 v2 = vec2(isoXs[1], isoYs[1]);
-                    //     drawLineSegment(v1, v2, propIsoColor.get(), indexBufferGrid, vertices);
-                    //     vec2 v3 = vec2(isoXs[2], isoYs[2]);
-                    //     vec2 v4 = vec2(isoXs[3], isoYs[3]);
-                    //     drawLineSegment(v3, v4, propIsoColor.get(), indexBufferGrid, vertices);
-                    // }
-
-                    if(isoXs[1] < isoXs[2]){
-                        vec2 v1 = vec2(isoXs[0], isoYs[0]);
-                        vec2 v2 = vec2(isoXs[1], isoYs[1]);
-                        drawLineSegment(v1, v2, propIsoColor.get(), indexBufferGrid, vertices);
-                        vec2 v3 = vec2(isoXs[2], isoYs[2]);
-                        vec2 v4 = vec2(isoXs[3], isoYs[3]);
-                        drawLineSegment(v3, v4, propIsoColor.get(), indexBufferGrid, vertices);
-                    }else{
-                        vec2 v1 = vec2(isoXs[0], isoYs[0]);
-                        vec2 v2 = vec2(isoXs[2], isoYs[2]);
-                        drawLineSegment(v1, v2, propIsoColor.get(), indexBufferGrid, vertices);
-                        vec2 v3 = vec2(isoXs[1], isoYs[1]);
-                        vec2 v4 = vec2(isoXs[3], isoYs[3]);
-                        drawLineSegment(v3, v4, propIsoColor.get(), indexBufferGrid, vertices);
+                    if(propDeciderType.get() == 0){
+                        float avg = (value00 + value01 + value10 + value11)/4;
+                        if((avg >= propIsoValue) == (value00 >= propIsoValue)){
+                            vec2 v1 = vec2(isoXs[0], isoYs[0]);
+                            vec2 v2 = vec2(isoXs[2], isoYs[2]);
+                            drawLineSegment(v1, v2, propIsoColor.get(), indexBufferGrid, vertices);
+                            vec2 v3 = vec2(isoXs[1], isoYs[1]);
+                            vec2 v4 = vec2(isoXs[3], isoYs[3]);
+                            drawLineSegment(v3, v4, propIsoColor.get(), indexBufferGrid, vertices);
+                        }else{
+                            vec2 v1 = vec2(isoXs[0], isoYs[0]);
+                            vec2 v2 = vec2(isoXs[1], isoYs[1]);
+                            drawLineSegment(v1, v2, propIsoColor.get(), indexBufferGrid, vertices);
+                            vec2 v3 = vec2(isoXs[2], isoYs[2]);
+                            vec2 v4 = vec2(isoXs[3], isoYs[3]);
+                            drawLineSegment(v3, v4, propIsoColor.get(), indexBufferGrid, vertices);
+                        }
+                    }
+                    else{
+                        if(isoXs[1] < isoXs[2]){
+                            vec2 v1 = vec2(isoXs[0], isoYs[0]);
+                            vec2 v2 = vec2(isoXs[1], isoYs[1]);
+                            drawLineSegment(v1, v2, propIsoColor.get(), indexBufferGrid, vertices);
+                            vec2 v3 = vec2(isoXs[2], isoYs[2]);
+                            vec2 v4 = vec2(isoXs[3], isoYs[3]);
+                            drawLineSegment(v3, v4, propIsoColor.get(), indexBufferGrid, vertices);
+                        }else{
+                            vec2 v1 = vec2(isoXs[0], isoYs[0]);
+                            vec2 v2 = vec2(isoXs[2], isoYs[2]);
+                            drawLineSegment(v1, v2, propIsoColor.get(), indexBufferGrid, vertices);
+                            vec2 v3 = vec2(isoXs[1], isoYs[1]);
+                            vec2 v4 = vec2(isoXs[3], isoYs[3]);
+                            drawLineSegment(v3, v4, propIsoColor.get(), indexBufferGrid, vertices);
+                        }
                     }
                 }   
 
