@@ -37,8 +37,14 @@ public:
     // Runge-Kutte of 4th order integration method)
     // Pass any other properties that influence the integration process
     // Examples would be the stepsize, inegreation direction, ...
-    //static vec2 RK4(const VolumeRAM* vr, size3_t dims, const vec2& position, ...);
-    //static vec2 Euler(const VolumeRAM* vr, size3_t dims, const vec2& position, ...);
+    static vec2 rk4(const VolumeRAM* vr, size3_t dims, const vec2& position, float stepSize);
+    static vec3 euler(const VolumeRAM* vr, size3_t dims, const vec3& position, float stepSize);
+    static void drawLineSegmentAndPoints(const vec3& v1, const vec3& v2,
+                                         size3_t dims,
+                                         IndexBufferRAM* indexBufferLines,
+                                         IndexBufferRAM* indexBufferPoints,
+                                         std::vector<BasicMesh::Vertex>& vertices);
+    static vec3 getCoordinates(size3_t dims, const vec3& gridPoint);
 
 };
 
