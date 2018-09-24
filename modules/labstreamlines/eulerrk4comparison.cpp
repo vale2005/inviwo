@@ -88,7 +88,7 @@ void EulerRK4Comparison::process()
 
     // Draw start point
     vec2 startPoint = propStartPoint.get();
-    vertices.push_back({ vec3(startPoint.x / (dims.x -1), startPoint.y / (dims.y-1), 0), 
+    vertices.push_back({ vec3(startPoint.x / (dims.x - 1), startPoint.y / (dims.y-1), 0), 
         vec3(0), vec3(0), vec4(0, 0, 0, 1)});
     indexBufferPoints->add(static_cast<std::uint32_t>(0));
     indexBufferEuler->add(static_cast<std::uint32_t>(0));
@@ -98,8 +98,19 @@ void EulerRK4Comparison::process()
     // and then integrate forward for a specified number of integration steps and a given stepsize 
     // (these should be additional properties of the processor)
 
-    // Integrator::Euler(vr, dims, startPoint, ...);
-    // Integrator::Rk4(vr, dims, startPoint, ...);
+    vec3 prevPoint = vec3(startPoint.x, startPoint.y, 0);
+
+    float stepSize = propStepSize.get();
+    for(int i=0; i<propNumberOfSteps.get(); i++){ 
+        vec3 nextPoint = Integrator::euler(vr, dims, prevPoint, stepSize);
+
+        vec3 temPrevPoint = vec3(prevPoint.x - 8.0, prevPoint.y - 8.0, 0);
+        Integrator::drawLineSegmentAndPoints(temPrevPoint, nextPoint, dims, indexBufferEuler, indexBufferPoints, vertices);
+
+        prevPoint = vec3(nextPoint.x + 8.0, nextPoint.y + 8.0, 0);
+    }
+
+    LogProcessorInfo("\n\n\n");
 
     mesh->addVertices(vertices);
     outMesh.setData(mesh);
