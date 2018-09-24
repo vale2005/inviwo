@@ -36,10 +36,8 @@ EulerRK4Comparison::EulerRK4Comparison()
     , outMesh("meshOut")
     , inData("inData")
     , propStartPoint("startPoint", "Start Point", vec2(0.5,0.5), vec2(0), vec2(1024), vec2(0.5))
-    // TODO: Initialize additional properties
-    // propertyName("propertyIdentifier", "Display Name of the Propery", 
-    // default value (optional), minimum value (optional), maximum value (optional), increment (optional));
-    // propertyIdentifier cannot have spaces
+    , propNumberOfSteps("numberOfSteps", "Number of integration steps", 100, 1, 1000)
+    , propStepSize("stepSize", "Integration step size", 0.001f, 0.001f, 1.0f, 0.001f)
     , mouseMoveStart("mouseMoveStart", "Move Start", [this](Event* e) { eventMoveStart(e); },
         MouseButton::Left, MouseState::Press | MouseState::Move)
 {
@@ -49,11 +47,9 @@ EulerRK4Comparison::EulerRK4Comparison()
 
     // Register Properties
     addProperty(propStartPoint);
+    addProperty(propNumberOfSteps);
+    addProperty(propStepSize);
     addProperty(mouseMoveStart);
-
-    // TODO: Register additional properties
-    // addProperty(propertyName);
-
 }
 
 void EulerRK4Comparison::eventMoveStart(Event* event)

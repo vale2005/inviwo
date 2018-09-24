@@ -81,8 +81,8 @@ public:
     EventProperty mouseMoveStart;
 
     // TODO: Declare additional properties
-    // IntProperty properyName;
-    // FloatProperty propertyName2;
+    IntProperty propNumberOfSteps;
+    FloatProperty propStepSize;
 
 // Attributes
 private:
