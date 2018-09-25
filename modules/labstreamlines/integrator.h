@@ -38,12 +38,23 @@ public:
     // Pass any other properties that influence the integration process
     // Examples would be the stepsize, inegreation direction, ...
     static vec2 rk4(const VolumeRAM* vr, size3_t dims, const vec2& position, float stepSize);
+    
+    //input position: [-8;8]x[-8;8] -> 
+    //output:         [-8;8]x[-8;8], stepsize added
     static vec3 euler(const VolumeRAM* vr, size3_t dims, const vec3& position, float stepSize);
+    
+    
+    //input v1,v2: [-8;8]x[-8;8] ->
+    //converts to coordinates and draws them
     static void drawLineSegmentAndPoints(const vec3& v1, const vec3& v2,
                                          size3_t dims,
                                          IndexBufferRAM* indexBufferLines,
                                          IndexBufferRAM* indexBufferPoints,
                                          std::vector<BasicMesh::Vertex>& vertices);
+
+    
+    //input gridPoint: [-8;8]x[-8;8] -> 
+    //output:         [0;1]x[0;1]
     static vec3 getCoordinates(size3_t dims, const vec3& gridPoint);
 
 };
