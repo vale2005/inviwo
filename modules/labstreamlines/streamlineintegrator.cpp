@@ -32,6 +32,14 @@ StreamlineIntegrator::StreamlineIntegrator()
     , outMesh("meshOut")
     , propStartPoint("startPoint", "Start Point", vec2(0.5, 0.5), vec2(0), vec2(1024), vec2(0.5))
     , propSeedMode("seedMode", "Seeds")
+    , propDirection("direction", "Direction of the integration")
+    , propStepSize("stepSize", "Integration step size", 0.001f, 0.001f, 2.0f, 0.001f)
+    , propNormalized("normalized", "Use normalized vector field")
+    , propNumberOfSteps("numberOfSteps", "Number of integration steps", 100, 1, 1000)
+    , propArcLength("arcLength", "Stop after arc length", 0, 0, 100, 0.1)
+    , propStopBoundary("stopBoudary", "Stop at boundary", true)
+    , propStopAtZero("stopAtZero", "Stop at zeros", true)
+    , propMinVelocity("minVelocity", "Velocity min", 1, 0, 5, 0.1)
     // TODO: Initialize additional properties
     // propertyName("propertyIdentifier", "Display Name of the Propery",
     // default value (optional), minimum value (optional), maximum value (optional), increment
@@ -45,9 +53,21 @@ StreamlineIntegrator::StreamlineIntegrator()
     // Register Properties
     propSeedMode.addOption("one", "Single Start Point", 0);
     propSeedMode.addOption("multiple", "Multiple Seeds", 1);
+    propDirection.addOption("forward", "forward direction", 0);
+    propDirection.addOption("backwards", "backward direction", 1);
+
+
     addProperty(propSeedMode);
     addProperty(propStartPoint);
     addProperty(mouseMoveStart);
+    addProperty(propDirection);
+    addProperty(propStepSize);
+    addProperty(propNormalized);
+    addProperty(propNumberOfSteps);
+    addProperty(propArcLength);
+    addProperty(propStopBoundary);
+    addProperty(propStopAtZero);
+    addProperty(propMinVelocity);
 
     // TODO: Register additional properties
     // addProperty(propertyName);
@@ -97,11 +117,14 @@ void StreamlineIntegrator::process() {
 
     if (propSeedMode.get() == 0) {
         auto indexBufferPoints = mesh->addIndexBuffer(DrawType::Points, ConnectivityType::None);
+        auto indexBufferLines = mesh->addIndexBuffer(DrawType::Lines, ConnectivityType::Strip);
         // Draw start point
         vec2 startPoint = propStartPoint.get();
         vertices.push_back({vec3(startPoint.x / (dims.x - 1), startPoint.y / (dims.y - 1), 0),
                             vec3(0), vec3(0), vec4(0, 0, 0, 1)});
         indexBufferPoints->add(static_cast<std::uint32_t>(0));
+        indexBufferLines->add(static_cast<std::uint32_t>(0));
+        doIntegration(startPoint, dims,vr,  indexBufferLines, indexBufferPoints, vertices, vec4(0,0,1,1));
         // TODO: Create one stream line from the given start point
     } else {
         // TODO: Seed multiple stream lines either randomly or using a uniform grid
@@ -111,5 +134,49 @@ void StreamlineIntegrator::process() {
     mesh->addVertices(vertices);
     outMesh.setData(mesh);
 }
+
+void StreamlineIntegrator::doIntegration(vec2 startPoint, size3_t dims, const VolumeRAM* vr,  IndexBufferRAM* indexBufferLines,
+                                         IndexBufferRAM* indexBufferPoints,
+                                      std::vector<BasicMesh::Vertex>& vertices, const vec4& color)
+{
+    vec2 prevPoint = startPoint;
+    float stepSize = (propDirection.get() == 0) ? propStepSize.get() : - propStepSize.get();
+    float arcLength = 0.0;
+    for(int i=0; i<propNumberOfSteps.get(); i++){ 
+        vec2 nextPoint = rk4(vr, dims, prevPoint, stepSize);
+        if (propStopAtZero.get() &&
+            (nextPoint[0] < 0 || nextPoint[0] > dims[0] - 1 || 
+            nextPoint[1] < 0 || nextPoint[1] > dims[1] - 1)) break;
+        Integrator::drawLineSegmentAndPoints(prevPoint, nextPoint, dims, indexBufferLines, 
+                                            indexBufferPoints, vertices, color);
+        
+        float velocity = sqrt(pow(nextPoint.x-prevPoint.x, 2) + pow(nextPoint.y-prevPoint.y, 2));
+        arcLength += velocity;
+
+        if(velocity <= propMinVelocity.get()) break;
+        if(arcLength >= propArcLength.get()) break;
+        if(propStopAtZero.get() && prevPoint.x == nextPoint.x && prevPoint.y == nextPoint.y) break;
+       
+        prevPoint = vec3(nextPoint.x, nextPoint.y, 0);
+    }
+
+
+}
+
+vec2 StreamlineIntegrator::rk4(const VolumeRAM* vr, size3_t dims, const vec2& position, float stepSize)
+{
+    bool isNormalized = propNormalized.get();
+    vec2 v1 = Integrator::sampleFromField(vr, dims, position, isNormalized);
+    vec2 v1step = vec2(position.x+(stepSize/2.0)*v1.x, position.y+(stepSize/2.0)*v1.y);
+    vec2 v2 = Integrator::sampleFromField(vr, dims, v1step, isNormalized);
+    vec2 v2step = vec2(position.x+(stepSize/2.0)*v2.x, position.y+(stepSize/2.0)*v2.y);
+    vec2 v3 = Integrator::sampleFromField(vr, dims, v2step, isNormalized);
+    vec2 v3step = vec2(position.x+stepSize*v3.x, position.y+stepSize*v3.y);
+    vec2 v4 = Integrator::sampleFromField(vr, dims, v3step, isNormalized);
+    float xCoord = position.x + stepSize * (v1.x/6.0 + v2.x/3.0 + v3.x/3.0 + v4.x/6.0);
+    float yCoord = position.y + stepSize * (v1.y/6.0 + v2.y/3.0 + v3.y/3.0 + v4.y/6.0);
+    return vec2(xCoord, yCoord);
+}
+
 
 }  // namespace inviwo

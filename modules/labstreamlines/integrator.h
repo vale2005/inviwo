@@ -31,7 +31,7 @@ public:
 
 //Methods
 public:
-    static vec2 sampleFromField(const VolumeRAM* vr, size3_t dims, const vec2& position);
+    static vec2 sampleFromField(const VolumeRAM* vr, size3_t dims, const vec2& position, bool isNormalized);
 
     // TODO: Implement the methods below (one integration step with either Euler or 
     // Runge-Kutte of 4th order integration method)
