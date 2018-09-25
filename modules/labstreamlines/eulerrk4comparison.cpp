@@ -98,16 +98,16 @@ void EulerRK4Comparison::process()
     // and then integrate forward for a specified number of integration steps and a given stepsize 
     // (these should be additional properties of the processor)
 
-    vec3 prevPoint = vec3(startPoint.x, startPoint.y, 0);
+    //convert startpoint from 16x16 to [-8;8]x[-8x8]
+    vec3 prevPoint = vec3(startPoint.x - (dims.x / 2.0), startPoint.y - (dims.y / 2.0), 0);
 
     float stepSize = propStepSize.get();
     for(int i=0; i<propNumberOfSteps.get(); i++){ 
         vec3 nextPoint = Integrator::euler(vr, dims, prevPoint, stepSize);
 
-        vec3 temPrevPoint = vec3(prevPoint.x - 8.0, prevPoint.y - 8.0, 0);
-        Integrator::drawLineSegmentAndPoints(temPrevPoint, nextPoint, dims, indexBufferEuler, indexBufferPoints, vertices);
+        Integrator::drawLineSegmentAndPoints(prevPoint, nextPoint, dims, indexBufferEuler, indexBufferPoints, vertices);
 
-        prevPoint = vec3(nextPoint.x + 8.0, nextPoint.y + 8.0, 0);
+        prevPoint = vec3(nextPoint.x, nextPoint.y, 0);
     }
 
     LogProcessorInfo("\n\n\n");

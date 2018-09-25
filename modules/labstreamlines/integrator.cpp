@@ -62,8 +62,7 @@ vec2 Integrator::sampleFromField(const VolumeRAM* vr, size3_t dims, const vec2& 
 
 vec3 Integrator::euler(const VolumeRAM* vr, size3_t dims, const vec3& position, float stepSize)
 {
-    vec3 nextGridPoint = vec3((position.x-8.0) + stepSize * (-1.0) * (position.y-8.0), (position.y-8) + stepSize * (position.x-8.0) / 2.0, 0);
-    // vec3 nextCoordinates = GetCoordinates(dims, nextGridPoint);
+    vec3 nextGridPoint = vec3(position.x + stepSize * (-1.0) * position.y, position.y + stepSize * position.x / 2.0, 0);
     return nextGridPoint; 
 
 }
@@ -74,7 +73,7 @@ vec2 Integrator::rk4(const VolumeRAM* vr, size3_t dims, const vec2& position, fl
 }
 
 vec3 Integrator::getCoordinates(size3_t dims, const vec3& gridPoint){
-    return vec3((gridPoint.x+8.0) / (dims.x - 1), (gridPoint.y+8.0) /(dims.y - 1), 0);
+    return vec3((gridPoint.x+(dims.x/2.0)) / (dims.x - 1), (gridPoint.y+(dims.y/2.0)) /(dims.y - 1), 0);
 }
 
 void Integrator::drawLineSegmentAndPoints(const vec3& v1, const vec3& v2,
