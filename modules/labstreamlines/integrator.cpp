@@ -60,9 +60,10 @@ vec2 Integrator::sampleFromField(const VolumeRAM* vr, size3_t dims, const vec2& 
 
 // TODO: Implement a single integration step here
 
-vec3 Integrator::euler(const VolumeRAM* vr, size3_t dims, const vec3& position, float stepSize)
+vec2 Integrator::euler(const VolumeRAM* vr, size3_t dims, const vec2& position, float stepSize)
 {
-    vec3 nextGridPoint = vec3(position.x + stepSize * (-1.0) * position.y, position.y + stepSize * position.x / 2.0, 0);
+    vec2 nextVec =  sampleFromField(vr, dims, position); 
+    vec2 nextGridPoint = vec2(position.x + stepSize * nextVec.x, position.y + stepSize * nextVec.y);
     return nextGridPoint; 
 
 }
@@ -72,11 +73,7 @@ vec2 Integrator::rk4(const VolumeRAM* vr, size3_t dims, const vec2& position, fl
     return vec2();
 }
 
-vec3 Integrator::getCoordinates(size3_t dims, const vec3& gridPoint){
-    return vec3((gridPoint.x+(dims.x/2.0)) / (dims.x - 1), (gridPoint.y+(dims.y/2.0)) /(dims.y - 1), 0);
-}
-
-void Integrator::drawLineSegmentAndPoints(const vec3& v1, const vec3& v2,
+void Integrator::drawLineSegmentAndPoints(const vec2& v1, const vec2& v2,
                                       size3_t dims,
                                       IndexBufferRAM* indexBufferLines,
                                       IndexBufferRAM* indexBufferPoints,
@@ -86,11 +83,11 @@ void Integrator::drawLineSegmentAndPoints(const vec3& v1, const vec3& v2,
     indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
     // A vertex has a position, a normal, a texture coordinate and a color
     // we do not use normal or texture coordinate, but still have to specify them
-    vertices.push_back({getCoordinates(dims, v1), vec3(0), vec3(0), vec4(0,1,0,1)});
+    vertices.push_back({vec3(v1[0]/(dims.x-1), v1[1]/(dims.y-1), 0), vec3(0), vec3(0), vec4(0,1,0,1)});
     // Add second vertex
     indexBufferLines->add(static_cast<std::uint32_t>(vertices.size()));
     indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
-    vertices.push_back({getCoordinates(dims, v2), vec3(0), vec3(0), vec4(0,1,0,1)});
+    vertices.push_back({vec3(v2[0]/(dims.x-1), v2[1]/(dims.y-1), 0), vec3(0), vec3(0), vec4(0,1,0,1)});
 }
 } // namespace
 

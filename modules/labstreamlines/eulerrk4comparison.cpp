@@ -37,7 +37,7 @@ EulerRK4Comparison::EulerRK4Comparison()
     , inData("inData")
     , propStartPoint("startPoint", "Start Point", vec2(0.5,0.5), vec2(0), vec2(1024), vec2(0.5))
     , propNumberOfSteps("numberOfSteps", "Number of integration steps", 100, 1, 1000)
-    , propStepSize("stepSize", "Integration step size", 0.001f, 0.001f, 1.0f, 0.001f)
+    , propStepSize("stepSize", "Integration step size", 0.001f, 0.001f, 2.0f, 0.001f)
     , mouseMoveStart("mouseMoveStart", "Move Start", [this](Event* e) { eventMoveStart(e); },
         MouseButton::Left, MouseState::Press | MouseState::Move)
 {
@@ -98,19 +98,17 @@ void EulerRK4Comparison::process()
     // and then integrate forward for a specified number of integration steps and a given stepsize 
     // (these should be additional properties of the processor)
 
-    //convert startpoint from 16x16 to [-8;8]x[-8x8]
-    vec3 prevPoint = vec3(startPoint.x - (dims.x / 2.0), startPoint.y - (dims.y / 2.0), 0);
+    // startpoint is 16x16 to
+    vec2 prevPoint = startPoint;
 
     float stepSize = propStepSize.get();
     for(int i=0; i<propNumberOfSteps.get(); i++){ 
-        vec3 nextPoint = Integrator::euler(vr, dims, prevPoint, stepSize);
+        vec2 nextPoint = Integrator::euler(vr, dims, prevPoint, stepSize);
 
         Integrator::drawLineSegmentAndPoints(prevPoint, nextPoint, dims, indexBufferEuler, indexBufferPoints, vertices);
 
         prevPoint = vec3(nextPoint.x, nextPoint.y, 0);
     }
-
-    LogProcessorInfo("\n\n\n");
 
     mesh->addVertices(vertices);
     outMesh.setData(mesh);
