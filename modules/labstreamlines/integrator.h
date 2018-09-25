@@ -39,24 +39,18 @@ public:
     // Examples would be the stepsize, inegreation direction, ...
     static vec2 rk4(const VolumeRAM* vr, size3_t dims, const vec2& position, float stepSize);
     
-    //input position: [-8;8]x[-8;8] -> 
-    //output:         [-8;8]x[-8;8], stepsize added
-    static vec3 euler(const VolumeRAM* vr, size3_t dims, const vec3& position, float stepSize);
+    //input position: 16x16 -> 
+    //output:         16x16, stepsize added
+    static vec2 euler(const VolumeRAM* vr, size3_t dims, const vec2& position, float stepSize);
     
     
-    //input v1,v2: [-8;8]x[-8;8] ->
-    //converts to coordinates and draws them
-    static void drawLineSegmentAndPoints(const vec3& v1, const vec3& v2,
+    //input v1,v2: 16x16 ->
+    //draws line based on dimensions
+    static void drawLineSegmentAndPoints(const vec2& v1, const vec2& v2,
                                          size3_t dims,
                                          IndexBufferRAM* indexBufferLines,
                                          IndexBufferRAM* indexBufferPoints,
                                          std::vector<BasicMesh::Vertex>& vertices);
-
-    
-    //input gridPoint: [-8;8]x[-8;8] -> 
-    //output:         [0;1]x[0;1]
-    static vec3 getCoordinates(size3_t dims, const vec3& gridPoint);
-
 };
 
 } // namespace
