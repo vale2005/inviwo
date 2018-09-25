@@ -17,7 +17,7 @@ Integrator::Integrator()
 {
 }
 
-vec2 Integrator::sampleFromField(const VolumeRAM* vr, size3_t dims, const vec2& position)
+vec2 Integrator::sampleFromField(const VolumeRAM* vr, size3_t dims, const vec2& position, bool isNormalized = false)
 {
     // Sampled outside the domain!
     if (position[0] < 0 || position[0] > dims[0] - 1 || position[1] < 0 || position[1] > dims[1] - 1)
@@ -52,6 +52,12 @@ vec2 Integrator::sampleFromField(const VolumeRAM* vr, size3_t dims, const vec2& 
     for (int i = 0; i < 2; i++)
     {
         f[i] = f00[i] * (1 - x) * (1 - y) + f01[i] * (1 - x) * y + f10[i] * x * (1 - y) + f11[i] * x * y;
+    }
+
+    if(isNormalized){
+        float size = std::sqrt(f[0]*f[0] + f[1]*f[1]);
+        f[0] = f[0] / size;
+        f[1] = f[1] / size;
     }
 
     return f;

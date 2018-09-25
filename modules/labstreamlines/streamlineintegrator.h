@@ -22,6 +22,7 @@
 #include <inviwo/core/properties/boolproperty.h>
 #include <inviwo/core/datastructures/geometry/basicmesh.h>
 #include <inviwo/core/datastructures/volume/volumeram.h>
+#include <cmath>
 
 namespace inviwo {
 
@@ -72,6 +73,11 @@ protected:
     virtual void process() override;
     void eventMoveStart(Event* event);
 
+    void doIntegration(vec2 startPoint, size3_t dims, const VolumeRAM* vr, IndexBufferRAM* indexBufferLines,
+                                         IndexBufferRAM* indexBufferPoints,
+                                      std::vector<BasicMesh::Vertex>& vertices, const vec4& color);
+
+    vec2 rk4(const VolumeRAM* vr, size3_t dims, const vec2& position, float stepSize);
     // (TODO: You could define some helper functions here,
     // e.g. a function creating a single streamline from one seed point)
 
@@ -88,6 +94,15 @@ public:
     FloatVec2Property propStartPoint;
     TemplateOptionProperty<int> propSeedMode;
 
+    TemplateOptionProperty<int> propDirection;
+    FloatProperty propStepSize;
+    BoolProperty propNormalized;
+    IntProperty propNumberOfSteps;
+    FloatProperty propArcLength;
+    BoolProperty propStopBoundary;
+    BoolProperty propStopAtZero;
+    FloatProperty propMinVelocity;
+
     // TODO: Declare additional properties
     // Some types that you might need are given below
     // IntProperty properyName;
@@ -100,6 +115,8 @@ public:
 private:
     // Dimensions of the current vector field
     size3_t dims;
+
+    
 };
 
 }  // namespace inviwo
