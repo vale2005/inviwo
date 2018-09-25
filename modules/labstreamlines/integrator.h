@@ -50,7 +50,8 @@ public:
                                          size3_t dims,
                                          IndexBufferRAM* indexBufferLines,
                                          IndexBufferRAM* indexBufferPoints,
-                                         std::vector<BasicMesh::Vertex>& vertices);
+                                         std::vector<BasicMesh::Vertex>& vertices,
+                                         const vec4& color);
 };
 
 } // namespace

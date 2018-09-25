@@ -70,24 +70,34 @@ vec2 Integrator::euler(const VolumeRAM* vr, size3_t dims, const vec2& position, 
 
 vec2 Integrator::rk4(const VolumeRAM* vr, size3_t dims, const vec2& position, float stepSize)
 {
-    return vec2();
+    vec2 v1 = sampleFromField(vr, dims, position);
+    vec2 v1step = vec2(position.x+(stepSize/2.0)*v1.x, position.y+(stepSize/2.0)*v1.y);
+    vec2 v2 = sampleFromField(vr, dims, v1step);
+    vec2 v2step = vec2(position.x+(stepSize/2.0)*v2.x, position.y+(stepSize/2.0)*v2.y);
+    vec2 v3 = sampleFromField(vr, dims, v2step);
+    vec2 v3step = vec2(position.x+stepSize*v3.x, position.y+stepSize*v3.y);
+    vec2 v4 = sampleFromField(vr, dims, v3step);
+    float xCoord = position.x + stepSize * (v1.x/6.0 + v2.x/3.0 + v3.x/3.0 + v4.x/6.0);
+    float yCoord = position.y + stepSize * (v1.y/6.0 + v2.y/3.0 + v3.y/3.0 + v4.y/6.0);
+    return vec2(xCoord, yCoord);
 }
 
 void Integrator::drawLineSegmentAndPoints(const vec2& v1, const vec2& v2,
                                       size3_t dims,
                                       IndexBufferRAM* indexBufferLines,
                                       IndexBufferRAM* indexBufferPoints,
-                                      std::vector<BasicMesh::Vertex>& vertices) {
+                                      std::vector<BasicMesh::Vertex>& vertices,
+                                      const vec4& color) {
     // Add first vertex
     indexBufferLines->add(static_cast<std::uint32_t>(vertices.size()));
     indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
     // A vertex has a position, a normal, a texture coordinate and a color
     // we do not use normal or texture coordinate, but still have to specify them
-    vertices.push_back({vec3(v1[0]/(dims.x-1), v1[1]/(dims.y-1), 0), vec3(0), vec3(0), vec4(0,1,0,1)});
+    vertices.push_back({vec3(v1[0]/(dims.x-1), v1[1]/(dims.y-1), 0), vec3(0), vec3(0), color});
     // Add second vertex
     indexBufferLines->add(static_cast<std::uint32_t>(vertices.size()));
     indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
-    vertices.push_back({vec3(v2[0]/(dims.x-1), v2[1]/(dims.y-1), 0), vec3(0), vec3(0), vec4(0,1,0,1)});
+    vertices.push_back({vec3(v2[0]/(dims.x-1), v2[1]/(dims.y-1), 0), vec3(0), vec3(0), color});
 }
 } // namespace
 

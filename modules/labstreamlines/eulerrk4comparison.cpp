@@ -36,8 +36,10 @@ EulerRK4Comparison::EulerRK4Comparison()
     , outMesh("meshOut")
     , inData("inData")
     , propStartPoint("startPoint", "Start Point", vec2(0.5,0.5), vec2(0), vec2(1024), vec2(0.5))
-    , propNumberOfSteps("numberOfSteps", "Number of integration steps", 100, 1, 1000)
-    , propStepSize("stepSize", "Integration step size", 0.001f, 0.001f, 2.0f, 0.001f)
+    , propNumberOfStepsEuler("numberOfStepsEuler", "Number of integration steps for Euler method", 100, 1, 1000)
+    , propStepSizeEuler("stepSizeEuler", "Integration step size for Euler method", 0.001f, 0.001f, 2.0f, 0.001f)
+    , propNumberOfStepsRK("numberOfStepsRK", "Number of integration steps for Runge Kutta method", 100, 1, 1000)
+    , propStepSizeRK("stepSizeRK", "Integration step size for Runge Kutta method", 0.001f, 0.001f, 2.0f, 0.001f)
     , mouseMoveStart("mouseMoveStart", "Move Start", [this](Event* e) { eventMoveStart(e); },
         MouseButton::Left, MouseState::Press | MouseState::Move)
 {
@@ -47,8 +49,10 @@ EulerRK4Comparison::EulerRK4Comparison()
 
     // Register Properties
     addProperty(propStartPoint);
-    addProperty(propNumberOfSteps);
-    addProperty(propStepSize);
+    addProperty(propNumberOfStepsEuler);
+    addProperty(propStepSizeEuler);
+    addProperty(propNumberOfStepsRK);
+    addProperty(propStepSizeRK);
     addProperty(mouseMoveStart);
 }
 
@@ -98,14 +102,26 @@ void EulerRK4Comparison::process()
     // and then integrate forward for a specified number of integration steps and a given stepsize 
     // (these should be additional properties of the processor)
 
-    // startpoint is 16x16 to
+    // startpoint is 16x16  
     vec2 prevPoint = startPoint;
 
-    float stepSize = propStepSize.get();
-    for(int i=0; i<propNumberOfSteps.get(); i++){ 
+    float stepSize = propStepSizeEuler.get();
+    for(int i=0; i<propNumberOfStepsEuler.get(); i++){ 
         vec2 nextPoint = Integrator::euler(vr, dims, prevPoint, stepSize);
 
-        Integrator::drawLineSegmentAndPoints(prevPoint, nextPoint, dims, indexBufferEuler, indexBufferPoints, vertices);
+        Integrator::drawLineSegmentAndPoints(prevPoint, nextPoint, dims, indexBufferEuler, 
+                                            indexBufferPoints, vertices, vec4(1,0,0,1));
+
+        prevPoint = vec3(nextPoint.x, nextPoint.y, 0);
+    }
+
+    prevPoint = startPoint;
+    stepSize = propStepSizeRK.get();
+    for(int i=0; i<propNumberOfStepsRK.get(); i++){ 
+        vec2 nextPoint = Integrator::rk4(vr, dims, prevPoint, stepSize);
+
+        Integrator::drawLineSegmentAndPoints(prevPoint, nextPoint, dims, indexBufferRK, 
+                                            indexBufferPoints, vertices, vec4(0,0,1,1));
 
         prevPoint = vec3(nextPoint.x, nextPoint.y, 0);
     }
