@@ -102,6 +102,7 @@ public:
     BoolProperty propStopBoundary;
     BoolProperty propStopAtZero;
     FloatProperty propMinVelocity;
+	IntProperty propLineCount;
 
     // TODO: Declare additional properties
     // Some types that you might need are given below
