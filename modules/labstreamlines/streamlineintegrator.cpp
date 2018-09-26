@@ -33,14 +33,17 @@ StreamlineIntegrator::StreamlineIntegrator()
     , propStartPoint("startPoint", "Start Point", vec2(0.5, 0.5), vec2(0), vec2(1024), vec2(0.5))
     , propSeedMode("seedMode", "Seeds")
     , propDirection("direction", "Direction of the integration")
-    , propStepSize("stepSize", "Integration step size", 0.001f, 0.001f, 2.0f, 0.001f)
+    , propStepSize("stepSize", "Integration step size", 0.2f, 0.001f, 2.0f, 0.001f)
     , propNormalized("normalized", "Use normalized vector field")
     , propNumberOfSteps("numberOfSteps", "Number of integration steps", 100, 1, 1000)
-    , propArcLength("arcLength", "Stop after arc length", 0, 0, 100, 0.1)
+    , propArcLength("arcLength", "Stop after arc length", 100, 0, 100, 0.1)
     , propStopBoundary("stopBoudary", "Stop at boundary", true)
     , propStopAtZero("stopAtZero", "Stop at zeros", true)
-    , propMinVelocity("minVelocity", "Velocity min", 1, 0, 5, 0.1)
+    , propMinVelocity("minVelocity", "Velocity min", 0, 0, 5, 0.1)
 	, propLineCount("lineCount", "Number of lines", 1, 1, 100, 1)
+    , propGridSeed("gridSeed", "Seed on grid cells")
+    , propXSeedCount("xSeedCount", "Seeds X", 1, 1, 100, 1)
+    , propYSeedCount("ySeedCount", "Seeds Y", 1, 1, 100, 1)
     // TODO: Initialize additional properties
     // propertyName("propertyIdentifier", "Display Name of the Propery",
     // default value (optional), minimum value (optional), maximum value (optional), increment
@@ -54,6 +57,7 @@ StreamlineIntegrator::StreamlineIntegrator()
     // Register Properties
     propSeedMode.addOption("one", "Single Start Point", 0);
     propSeedMode.addOption("multiple", "Multiple Seeds", 1);
+
     propDirection.addOption("forward", "forward direction", 0);
     propDirection.addOption("backwards", "backward direction", 1);
 
@@ -70,6 +74,9 @@ StreamlineIntegrator::StreamlineIntegrator()
     addProperty(propStopAtZero);
     addProperty(propMinVelocity);
 	addProperty(propLineCount);
+    addProperty(propGridSeed);
+    addProperty(propXSeedCount);
+    addProperty(propYSeedCount);
 
     // TODO: Register additional properties
     // addProperty(propertyName);
@@ -128,30 +135,52 @@ void StreamlineIntegrator::process() {
         indexBufferLines->add(static_cast<std::uint32_t>(0));
         doIntegration(startPoint, dims,vr,  indexBufferLines, indexBufferPoints, vertices, vec4(0,0,1,1));
         // TODO: Create one stream line from the given start point
-    } else {
+    } else if(propSeedMode.get() == 1) {
         // TODO: Seed multiple stream lines either randomly or using a uniform grid
         // (TODO: Bonus, sample randomly according to magnitude of the vector field)
 
-		for (int i = 0; i < propLineCount.get(); i++) {
+        if(!propGridSeed.get()){
+            for (int i = 0; i < propLineCount.get(); i++) {
+                auto indexBufferPoints = mesh->addIndexBuffer(DrawType::Points, ConnectivityType::None);
+                auto indexBufferLines = mesh->addIndexBuffer(DrawType::Lines, ConnectivityType::Strip);
+                // Draw start point
+                float x1 = (rand() % ((dims.x-1) * 1000)) / 1000.0;
+                float y1 = (rand() % ((dims.y-1) * 1000)) / 1000.0;
+                LogProcessorInfo("Points: " << x1 <<  " " << y1); 
+                vec2 startPoint = vec2(x1, y1);
+                vertices.push_back({ vec3(startPoint.x / (dims.x - 1), startPoint.y / (dims.y - 1), 0),
+                    vec3(0), vec3(0), vec4(0, 0, 1, 1) });
+                indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
+                indexBufferLines->add(static_cast<std::uint32_t>(vertices.size()));
 
-			auto indexBufferPoints = mesh->addIndexBuffer(DrawType::Points, ConnectivityType::None);
-			auto indexBufferLines = mesh->addIndexBuffer(DrawType::Lines, ConnectivityType::Strip);
-			// Draw start point
-			float x1 = rand() % dims.x;
-			float y1 = rand() % dims.y;
-			vec2 startPoint = vec2(x1, y1);
-			vertices.push_back({ vec3(startPoint.x / (dims.x - 1), startPoint.y / (dims.y - 1), 0),
-				vec3(0), vec3(0), vec4(0, 0, 0, 1) });
-			indexBufferPoints->add(static_cast<std::uint32_t>(0));
-			indexBufferLines->add(static_cast<std::uint32_t>(0));
+
+                doIntegration(startPoint, dims, vr, indexBufferLines, indexBufferPoints, vertices, vec4(0, 0, 1, 1));
+                
+            }
+        } else {
+            for (int i = 0; i < propXSeedCount.get(); i++) {
+                float x1 = (float)i / propXSeedCount.get() * (dims.x);
+                for (int j = 0; j < propYSeedCount.get(); j++) {
+                    auto indexBufferPoints = mesh->addIndexBuffer(DrawType::Points, ConnectivityType::None);
+                    auto indexBufferLines = mesh->addIndexBuffer(DrawType::Lines, ConnectivityType::Strip);
+                    float y1 = (float)j / propYSeedCount.get() * (dims.y);
+                    LogProcessorInfo("Points: " << x1 <<  " " << y1); 
+                    vec2 startPoint = vec2(x1, y1);
+                    vertices.push_back({ vec3(startPoint.x / (dims.x - 1), startPoint.y / (dims.y - 1), 0),
+                        vec3(0), vec3(0), vec4(0, 0, 1, 1) });
+                    indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
+                    indexBufferLines->add(static_cast<std::uint32_t>(vertices.size()));
 
 
-			doIntegration(startPoint, dims, vr, indexBufferLines, indexBufferPoints, vertices, vec4(0, 0, 1, 1));
-		}
+                    doIntegration(startPoint, dims, vr, indexBufferLines, indexBufferPoints, vertices, vec4(0, 0, 1, 1));   
+                }
+            }
+        }
     }
 
     mesh->addVertices(vertices);
     outMesh.setData(mesh);
+
 }
 
 void StreamlineIntegrator::doIntegration(vec2 startPoint, size3_t dims, const VolumeRAM* vr,  IndexBufferRAM* indexBufferLines,

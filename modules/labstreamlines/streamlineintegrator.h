@@ -103,6 +103,9 @@ public:
     BoolProperty propStopAtZero;
     FloatProperty propMinVelocity;
 	IntProperty propLineCount;
+    IntProperty propXSeedCount;
+    IntProperty propYSeedCount;
+    BoolProperty propGridSeed;
 
     // TODO: Declare additional properties
     // Some types that you might need are given below
