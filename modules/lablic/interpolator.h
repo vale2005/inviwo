@@ -14,6 +14,7 @@
 #include <inviwo/core/datastructures/volume/volumeram.h>
 #include <inviwo/core/datastructures/image/imageram.h>
 #include <lablic/lablicmoduledefine.h>
+#include <inviwo/core/datastructures/image/imageram.h>
 
 namespace inviwo
 {
