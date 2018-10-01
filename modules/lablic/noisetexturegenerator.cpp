@@ -59,10 +59,12 @@ void NoiseTextureGenerator::process() {
     // representation of the object we want to modify (here a layer)
     auto lr = outLayer->getEditableRepresentation<LayerRAM>();
 
+    int val = 0;
+
     for (int j = 0; j < texSize_.get().y; j++) {
         for (int i = 0; i < texSize_.get().x; i++) {
 
-            int val = 0;
+            val = rand() % 256;
 
             // TODO: Randomly sample values for the texture
 
