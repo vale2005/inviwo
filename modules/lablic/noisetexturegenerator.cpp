@@ -84,8 +84,6 @@ void NoiseTextureGenerator::process() {
 				}
 			}
 
-            // TODO: Randomly sample values for the texture
-
             // A value within the ouput image is set by specifying pixel position and color
             lr->setFromDVec4(size2_t(i, j), dvec4(val, val, val, 255));
         }

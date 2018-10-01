@@ -31,6 +31,7 @@ LICProcessor::LICProcessor()
     , volumeIn_("volIn")
     , noiseTexIn_("noiseTexIn")
     , licOut_("licOut")
+    , propKernelSize("kernelSize", "Kernel Size", 25, 10, 100, 5)
 
 // TODO: Register additional properties
 
@@ -43,6 +44,7 @@ LICProcessor::LICProcessor()
     // Register properties
 
     // TODO: Register additional properties
+    addProperty(propKernelSize);
 
 }
 
@@ -72,8 +74,10 @@ void LICProcessor::process() {
     auto lr = outLayer->getEditableRepresentation<LayerRAM>();
 
     // To access the image at a floating point position, you can call
-    //      Interpolator::sampleFromGrayscaleImage(tr, somePos)
-
+    //Interpolator::sampleFromGrayscaleImage(tr, somePos)
+    int kernelSize = propKernelSize.get();
+    
+    
     // TODO: Implement LIC and FastLIC
     // This code instead sets all pixels to the same gray value
     std::vector<std::vector<double>> licTexture(texDims_.x, std::vector<double>(texDims_.y, 127.0));

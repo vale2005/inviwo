@@ -17,36 +17,22 @@
 #include <functional>
 
 namespace inviwo {
-
-class IVW_MODULE_LABLIC_API Integrator {
-// Friends
-// Types
-public:
-// Construction / Deconstruction
-public:
-    Integrator();
-    virtual ~Integrator() = default;
-
-// Methods
-public:
-
-    static vec2 sampleFromField(const Volume* vol, size3_t dims, const vec2& position, bool isNormalized);
-
-    static vec2 rk4(const Volume* vol, size3_t dims, const vec2& position, float stepSize);
     
-    //input position: 16x16 -> 
-    //output:         16x16, stepsize added
-    static vec2 euler(const Volume* vol, size3_t dims, const vec2& position, float stepSize);
+    class IVW_MODULE_LABLIC_API Integrator {
+        // Friends
+        // Types
+    public:
+        // Construction / Deconstruction
+    public:
+        Integrator();
+        virtual ~Integrator() = default;
+        
+        // Methods
+    public:
+        
+        static vec2 rk4(const Volume* vol, size3_t dims, const vec2& position, float stepSize);
+        static std::vector<vec2> getStreamlinePoints(int kernel, vec2 startPoint);
+        
+    };
     
-    
-    //input v1,v2: 16x16 ->
-    //draws line based on dimensions
-    static void drawLineSegmentAndPoints(const vec2& v1, const vec2& v2,
-                                         size3_t dims,
-                                         IndexBufferRAM* indexBufferLines,
-                                         IndexBufferRAM* indexBufferPoints,
-                                         std::vector<BasicMesh::Vertex>& vertices,
-                                         const vec4& color);
-};
-
 }  // namespace inviwo
