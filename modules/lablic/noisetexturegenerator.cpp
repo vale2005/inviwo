@@ -27,7 +27,7 @@ const ProcessorInfo NoiseTextureGenerator::getProcessorInfo() const { return pro
 NoiseTextureGenerator::NoiseTextureGenerator()
     : Processor()
     , texOut_("texOut")
-    , texSize_("texSize", "Texture Size", vec2(512, 512), vec2(1, 1), vec2(2048, 2048), vec2(1, 1))
+    , texSize_("texSize", "Texture Size", vec2(700, 400), vec2(1, 1), vec2(2048, 2048), vec2(1, 1))
 	, propRandomSeed("randomSeed", "Random seed", 100, 1, 1000, 1)
 	, propBnW("bnw", "Black and white noise")
 
@@ -58,7 +58,7 @@ void NoiseTextureGenerator::process() {
     // color layer is relevant for us
     auto outLayer = outImage->getColorLayer();
 
-    outLayer->setDimensions(size2_t(texSize_.get().x, texSize_.get().y));
+    outImage->setDimensions(size2_t(texSize_.get().x, texSize_.get().y));
     // With the data format DataVec4UInt8 values for RGB-alpha range between 0 and 255
     outLayer->setDataFormat(DataVec4UInt8::get());
 

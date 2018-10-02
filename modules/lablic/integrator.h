@@ -30,8 +30,8 @@ namespace inviwo {
         // Methods
     public:
         
-        static vec2 rk4(const Volume* vol, size3_t dims, const vec2& position, float stepSize);
-        static std::vector<vec2> getStreamlinePoints(int kernel, vec2 startPoint);
+        static vec2 rk4(const Volume* vol, const vec2& position, float stepSize);
+        static std::vector<vec2> getStreamlinePoints(const Volume* vol, size2_t dims, int kernel, vec2 startPoint, float stepSize);
         
     };
     

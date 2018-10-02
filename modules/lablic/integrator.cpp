@@ -12,9 +12,9 @@
 #include <lablic/interpolator.h>
 
 namespace inviwo {
-
-Integrator::Integrator() {}
-
+    
+    Integrator::Integrator() {}
+    
     // HINT: There is a change in sampleFromField():
     //      Interpolator::sampleFromField(vol.get(), somePosition);
     
@@ -22,7 +22,7 @@ Integrator::Integrator() {}
     // TODO: Implement a single integration step here
     
     
-    vec2 Integrator::rk4(const Volume* vol, size3_t dims, const vec2& position, float stepSize)
+    vec2 Integrator::rk4(const Volume* vol, const vec2& position, float stepSize)
     {
         vec2 v1 = Interpolator::sampleFromField(vol, position);
         vec2 v1step = vec2(position.x+(stepSize/2.0)*v1.x, position.y+(stepSize/2.0)*v1.y);
@@ -35,13 +35,27 @@ Integrator::Integrator() {}
         float yCoord = position.y + stepSize * (v1.y/6.0 + v2.y/3.0 + v3.y/3.0 + v4.y/6.0);
         return vec2(xCoord, yCoord);
     }
-
-    std::vector<vec2> Integrator::getStreamlinePoints(int kernel, vec2 startPoint){
-        std::vector<vec2> streamlinePoints;
-        for (int i = 0; i<kernel; i++) {
-            //TODO implement
-        }
-        return streamlinePoints;
+    
+    std::vector<vec2> Integrator::getStreamlinePoints(const Volume* vol, size2_t dims, int kernel, vec2 startPoint, float stepSize){
+            
+            //initialize vector for points along the stream line
+            std::vector<vec2> streamlinePoints;
+            
+            //initialize startpoints
+            vec2 currPointForward = startPoint;
+            vec2 currPointBackward = startPoint;
+            
+            for (int i = 0; i<kernel; i++) {
+                currPointForward = rk4(vol, currPointForward, stepSize);
+                currPointBackward = rk4(vol, currPointBackward, stepSize*(-1));
+                streamlinePoints.push_back(currPointBackward);
+                streamlinePoints.push_back(currPointForward);
+            }
+            
+            streamlinePoints.push_back(startPoint);
+            
+            return streamlinePoints;
+            
     }
-
+        
 }  // namespace inviwo
