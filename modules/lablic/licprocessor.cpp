@@ -104,8 +104,8 @@ void LICProcessor::process() {
             for(int ind=0; ind<currKernelPoints.size(); ind++){
                 // int x = round(currKernelPoints[ind].x * texDims_.x);
                 // int y = round(currKernelPoints[ind].y * texDims_.y);
-                int x = round(currKernelPoints[ind].x * (float)texDims_.x / (dims.x - 1.0));
-                int y = round(currKernelPoints[ind].y * (float)texDims_.y / (dims.y - 1.0));
+                float x = currKernelPoints[ind].x * (float)texDims_.x / (dims.x - 1.0);
+                float y = currKernelPoints[ind].y * (float)texDims_.y / (dims.y - 1.0);
                 kernelSum += Interpolator::sampleFromGrayscaleImage(tr, vec2(x,y));
                 // kernelSum += Interpolator::sampleFromGrayscaleImage(tr, currKernelPoints[ind]);
             }
