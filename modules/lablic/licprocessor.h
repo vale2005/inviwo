@@ -56,7 +56,7 @@ public:
 protected:
     // Our main computation function
     virtual void process() override;
-
+    static void enhance();
     // (TODO: Helper functions can be defined here and then implemented in the .cpp)
     // e.g. something like a function for standardLIC, fastLIC, autoContrast, ...
 
@@ -76,6 +76,7 @@ public:
     
 // TODO: Declare properties
     IntProperty propKernelSize;
+	IntProperty propEnhance;
 // BoolProperty prop2;
 
 // Attributes
