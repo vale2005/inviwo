@@ -31,7 +31,7 @@ LICProcessor::LICProcessor()
     , volumeIn_("volIn")
     , noiseTexIn_("noiseTexIn")
     , licOut_("licOut")
-    , propKernelSize("kernelSize", "Kernel Size", 25, 1, 100, 1)
+    , propKernelSize("kernelSize", "Kernel Size", 7, 1, 100, 1)
 
 // TODO: Register additional properties
 
@@ -61,6 +61,9 @@ void LICProcessor::process() {
     auto vol = volumeIn_.getData();
     vectorFieldDims_ = vol->getDimensions();
     auto vr = vol->getRepresentation<VolumeRAM>();
+    auto dims = vr->getDimensions();
+
+
 
     // An accessible form of on image is retrieved analogous to a volume
     auto tex = noiseTexIn_.getData();
@@ -77,34 +80,37 @@ void LICProcessor::process() {
     //Interpolator::sampleFromGrayscaleImage(tr, somePos)
     int kernelSize = propKernelSize.get()/2;
     
+    auto base = vol->getBasis();
     
     // TODO: Implement LIC and FastLIC
     // This code instead sets all pixels to the same gray value
-    std::vector<std::vector<double>> licTexture(texDims_.x, std::vector<double>(texDims_.y, 127.0));
-    float stepSize = std::min(1.0/(float)texDims_.x, 1.0/(float)texDims_.y);
-    //float stepSize = 1;
+    // std::vector<std::vector<double>> licTekxture(texDims_.x, std::vector<double>(texDims_.y, 127.0));
+    // float stepSize = std::min(1.0/(float)texDims_.x, 1.0/(float)texDims_.y);
+    float stepSize = std::min((float)(dims.x - 1.0)/texDims_.x, (float)(dims.y - 1.0)/texDims_.y);
 
-    for (auto j = 0; j < texDims_.y; j++) {
-        for (auto i = 0; i < texDims_.x; i++) {
+    for (auto i = 0; i < texDims_.x; i++) {
+        for (auto j = 0; j < texDims_.y; j++) {
             
             //display randomly generated image
             //double truncatedSum = Interpolator::sampleFromGrayscaleImage(tr, vec2(i, j));
             
-            vec2 currPoint = vec2((float)i / texDims_.x, (float)j/texDims_.y);
-            //vec2 currPoint = vec2(i,j);
-            std::vector<vec2> currKernelPoints = Integrator::getStreamlinePoints(vol.get(), texDims_, kernelSize, currPoint, stepSize);
+
+            //o to 1
+            // vec2 currPoint = vec2((float)i / texDims_.x, (float)j/texDims_.y);
+            vec2 currPoint = vec2((float)i * (float)(dims.x - 1.0)/texDims_.x, (float)j * (float)(dims.y - 1.0) / texDims_.y );
+            std::vector<vec2> currKernelPoints = Integrator::getStreamlinePoints(vol.get(), kernelSize, currPoint, stepSize);
             
             float kernelSum = 0.0;
             for(int ind=0; ind<currKernelPoints.size(); ind++){
-                int x = round(currKernelPoints[ind].x * texDims_.x);
-                int y = round(currKernelPoints[ind].y * texDims_.y);
+                // int x = round(currKernelPoints[ind].x * texDims_.x);
+                // int y = round(currKernelPoints[ind].y * texDims_.y);
+                int x = round(currKernelPoints[ind].x * (float)texDims_.x / (dims.x - 1.0));
+                int y = round(currKernelPoints[ind].y * (float)texDims_.y / (dims.y - 1.0));
                 kernelSum += Interpolator::sampleFromGrayscaleImage(tr, vec2(x,y));
-                //kernelSum += Interpolator::sampleFromGrayscaleImage(tr, currKernelPoints[ind]);
-
+                // kernelSum += Interpolator::sampleFromGrayscaleImage(tr, currKernelPoints[ind]);
             }
             int truncatedSum = std::round(kernelSum/(float)currKernelPoints.size());
-            //LogProcessorInfo("current sum: " << truncatedSum);
-            
+            // LogProcessorInfo("\n\n")
             
             lr->setFromDVec4(size2_t(i, j), dvec4(truncatedSum, truncatedSum, truncatedSum, 255));
 

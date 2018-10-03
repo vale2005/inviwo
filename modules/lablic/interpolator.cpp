@@ -12,6 +12,8 @@
 
 namespace inviwo {
 
+//input: [0;dims]
+//output: vector in vectorfield, scaled to [0, dims]
 vec2 Interpolator::sampleFromField(const Volume* vol, const vec2& position) {
 
     auto vr = vol->getRepresentation<VolumeRAM>();
@@ -52,6 +54,9 @@ vec2 Interpolator::sampleFromField(const Volume* vol, const vec2& position) {
     return f;
 }
 
+
+//input: [0;dims]
+//output: value
 double Interpolator::sampleFromGrayscaleImage(const ImageRAM* tr, const vec2& position)
 {
     vec2 locPix(position[0] - int(position[0]), position[1] - int(position[1]));

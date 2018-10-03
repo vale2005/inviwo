@@ -21,7 +21,8 @@ namespace inviwo {
     
     // TODO: Implement a single integration step here
     
-    
+    //input:[0;dims]
+    //output:[0;dims], next position on streamline
     vec2 Integrator::rk4(const Volume* vol, const vec2& position, float stepSize)
     {
         vec2 v1 = Interpolator::sampleFromField(vol, position);
@@ -36,7 +37,8 @@ namespace inviwo {
         return vec2(xCoord, yCoord);
     }
     
-    std::vector<vec2> Integrator::getStreamlinePoints(const Volume* vol, size2_t dims, int kernel, vec2 startPoint, float stepSize){
+    //as 0 to dims -> vec([0;dims], [0;dims])
+    std::vector<vec2> Integrator::getStreamlinePoints(const Volume* vol, int kernel, vec2 startPoint, float stepSize){
             
             //initialize vector for points along the stream line
             std::vector<vec2> streamlinePoints;
@@ -47,7 +49,7 @@ namespace inviwo {
             
             for (int i = 0; i<kernel; i++) {
                 currPointForward = rk4(vol, currPointForward, stepSize);
-                currPointBackward = rk4(vol, currPointBackward, stepSize*(-1));
+                currPointBackward = rk4(vol, currPointBackward, stepSize*(-1.0));
                 streamlinePoints.push_back(currPointBackward);
                 streamlinePoints.push_back(currPointForward);
             }
