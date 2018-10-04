@@ -32,7 +32,8 @@ LICProcessor::LICProcessor()
     , noiseTexIn_("noiseTexIn")
     , licOut_("licOut")
     , propKernelSize("kernelSize", "Kernel Size", 7, 1, 100, 1)
-	, propEnhance("enhance", "Enhancement amount", 0, 0, 50, 1)
+	, propMean("mean", "The mean color value of the pixels", 0.5, 0, 1, 0.1)
+	, propStandardDev("standardDev", "Standard Deviation", 0, 0, 1, 0.1)
 
 // TODO: Register additional properties
 
@@ -46,7 +47,8 @@ LICProcessor::LICProcessor()
 
     // TODO: Register additional properties
     addProperty(propKernelSize);
-	addProperty(propEnhance);
+	addProperty(propMean);
+	addProperty(propStandardDev);
 
 }
 
@@ -116,23 +118,25 @@ void LICProcessor::process() {
             // LogProcessorInfo("\n\n")
             
              // Color enhancer with user specific input
-            int enhancer = propEnhance.get();
+			float meanCol = propMean.get();
+			float standardDev = propStandardDev.get();
             int enhancedCol = 0;
-            if (propEnhance.get() > 0) {
+			int prettyMean = std::round(meanCol * 255.0);
+            if (standardDev > 0.0) {
 
                 // The current color in the texture
                 int currentCol = truncatedSum;
                 // Make bright stuff brighter
-                if (currentCol > 128) {
-                    enhancedCol = currentCol + enhancer;
+                if (currentCol > prettyMean) {
+                    enhancedCol = std::round(currentCol* (1 + standardDev));
                     // Out of bounds check
-                    if (enhancedCol > 255) {
-                        enhancedCol = 255;
+                    if (enhancedCol > 255.0) {
+                        enhancedCol = 255.0;
                     }
                 }
                 // Make dark stuff darker
-                if (currentCol <= 128) {
-                    enhancedCol = currentCol - enhancer;
+                if (currentCol <= prettyMean) {
+                    enhancedCol = std::round(currentCol* (1 - standardDev));
                     // Out of bounds check
                     if (enhancedCol < 0) {
                         enhancedCol = 0;

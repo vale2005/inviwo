@@ -76,7 +76,8 @@ public:
     
 // TODO: Declare properties
     IntProperty propKernelSize;
-	IntProperty propEnhance;
+	FloatProperty propMean;
+	FloatProperty propStandardDev;
 // BoolProperty prop2;
 
 // Attributes
