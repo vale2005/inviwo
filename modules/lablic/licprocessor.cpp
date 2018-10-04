@@ -34,6 +34,7 @@ LICProcessor::LICProcessor()
     , propKernelSize("kernelSize", "Kernel Size", 7, 1, 100, 1)
 	, propMean("mean", "The mean color value of the pixels", 0.5, 0, 1, 0.1)
 	, propStandardDev("standardDev", "Standard Deviation", 0, 0, 1, 0.1)
+    , propLicType("licType", "Lic Type")
 
 // TODO: Register additional properties
 
@@ -44,11 +45,14 @@ LICProcessor::LICProcessor()
     addPort(licOut_);
 
     // Register properties
+    propLicType.addOption("normal", "Normal", 0);
+    propLicType.addOption("fast", "Fast", 1);
 
     // TODO: Register additional properties
     addProperty(propKernelSize);
 	addProperty(propMean);
 	addProperty(propStandardDev);
+    addProperty(propLicType);
 
 }
 
@@ -88,69 +92,120 @@ void LICProcessor::process() {
     
     // TODO: Implement LIC and FastLIC
     // This code instead sets all pixels to the same gray value
-    // std::vector<std::vector<double>> licTekxture(texDims_.x, std::vector<double>(texDims_.y, 127.0));
-    // float stepSize = std::min(1.0/(float)texDims_.x, 1.0/(float)texDims_.y);
 	float stepSize = std::min((float)(dims.x - 1.0) / texDims_.x, (float)(dims.y - 1.0) / texDims_.y);
 
-
-    for (auto i = 0; i < texDims_.x; i++) {
-        for (auto j = 0; j < texDims_.y; j++) {
-            
-            //display randomly generated image
-            //double truncatedSum = Interpolator::sampleFromGrayscaleImage(tr, vec2(i, j));
-            
-
-            //o to 1
-            // vec2 currPoint = vec2((float)i / texDims_.x, (float)j/texDims_.y);
-            vec2 currPoint = vec2((float)i * (float)(dims.x - 1.0)/texDims_.x, (float)j * (float)(dims.y - 1.0) / texDims_.y );
-            std::vector<vec2> currKernelPoints = Integrator::getStreamlinePoints(vol.get(), kernelSize, currPoint, stepSize);
-            
-            float kernelSum = 0.0;
-            for(int ind=0; ind<currKernelPoints.size(); ind++){
-                // int x = round(currKernelPoints[ind].x * texDims_.x);
-                // int y = round(currKernelPoints[ind].y * texDims_.y);
-                float x = currKernelPoints[ind].x * (float)texDims_.x / (dims.x - 1.0);
-                float y = currKernelPoints[ind].y * (float)texDims_.y / (dims.y - 1.0);
-                kernelSum += Interpolator::sampleFromGrayscaleImage(tr, vec2(x,y));
-                // kernelSum += Interpolator::sampleFromGrayscaleImage(tr, currKernelPoints[ind]);
-            }
-            int truncatedSum = std::round(kernelSum/(float)currKernelPoints.size());
-            // LogProcessorInfo("\n\n")
-            
-             // Color enhancer with user specific input
-			float meanCol = propMean.get();
-			float standardDev = propStandardDev.get();
-            int enhancedCol = 0;
-			int prettyMean = std::round(meanCol * 255.0);
-            if (standardDev > 0.0) {
-
-                // The current color in the texture
-                int currentCol = truncatedSum;
-                // Make bright stuff brighter
-                if (currentCol > prettyMean) {
-                    enhancedCol = std::round(currentCol* (1 + standardDev));
-                    // Out of bounds check
-                    if (enhancedCol > 255.0) {
-                        enhancedCol = 255.0;
-                    }
-                }
-                // Make dark stuff darker
-                if (currentCol <= prettyMean) {
-                    enhancedCol = std::round(currentCol* (1 - standardDev));
-                    // Out of bounds check
-                    if (enhancedCol < 0) {
-                        enhancedCol = 0;
-                    }
-                }
-                lr->setFromDVec4(size2_t(i, j), dvec4(enhancedCol, enhancedCol, enhancedCol, 255));
-            
-        
+    if(propLicType.get() == 0){
+        for (auto i = 0; i < texDims_.x; i++) {
+            for (auto j = 0; j < texDims_.y; j++) {
                 
-            }else{
-                lr->setFromDVec4(size2_t(i, j), dvec4(truncatedSum, truncatedSum, truncatedSum, 255));
-            }
+                //display randomly generated image
+                //double truncatedSum = Interpolator::sampleFromGrayscaleImage(tr, vec2(i, j));
+                
 
+                //o to 1
+                // vec2 currPoint = vec2((float)i / texDims_.x, (float)j/texDims_.y);
+                vec2 currPoint = vec2((float)i * (float)(dims.x - 1.0)/texDims_.x, (float)j * (float)(dims.y - 1.0) / texDims_.y );
+                std::vector<vec2> currKernelPoints = Integrator::getStreamlinePoints(vol.get(), kernelSize, currPoint, stepSize);
+                
+                float kernelSum = 0.0;
+                for(int ind=0; ind<currKernelPoints.size(); ind++){
+                    // int x = round(currKernelPoints[ind].x * texDims_.x);
+                    // int y = round(currKernelPoints[ind].y * texDims_.y);
+                    float x = currKernelPoints[ind].x * (float)texDims_.x / (dims.x - 1.0);
+                    float y = currKernelPoints[ind].y * (float)texDims_.y / (dims.y - 1.0);
+                    kernelSum += Interpolator::sampleFromGrayscaleImage(tr, vec2(x,y));
+                    // kernelSum += Interpolator::sampleFromGrayscaleImage(tr, currKernelPoints[ind]);
+                }
+                int truncatedSum = std::round(kernelSum/(float)currKernelPoints.size());
+                // LogProcessorInfo("\n\n")
+                
+                // Color enhancer with user specific input
+                float meanCol = propMean.get();
+                float standardDev = propStandardDev.get();
+                int enhancedCol = 0;
+                int prettyMean = std::round(meanCol * 255.0);
+                if (standardDev > 0.0){
+
+                    // The current color in the texture
+                    int currentCol = truncatedSum;
+                    // Make bright stuff brighter
+                    if (currentCol > prettyMean) {
+                        enhancedCol = std::round(currentCol* (1.0 + standardDev));
+                        // Out of bounds check
+                        if (enhancedCol > 255.0) {
+                            enhancedCol = 255.0;
+                        }
+                    }
+                      // Make dark stuff darker
+                    if (currentCol <= prettyMean) {
+                        enhancedCol = std::round(currentCol* (1.0 - standardDev));
+                        // Out of bounds check
+                        if (enhancedCol < 0) {
+                            enhancedCol = 0;
+                        }
+                    }
+                    lr->setFromDVec4(size2_t(i, j), dvec4(enhancedCol, enhancedCol, enhancedCol, 255)); 
+                }else{
+                    lr->setFromDVec4(size2_t(i, j), dvec4(truncatedSum, truncatedSum, truncatedSum, 255));
+                }
+            }
         }
+    }else{
+        bool visitedPoints[texDims_.x][texDims_.y];
+        for (auto i = 0; i < texDims_.x; i++) {
+            for (auto j = 0; j < texDims_.y; j++) {
+                visitedPoints[i][j] = false;
+            }
+        }
+        int visitedCount = 0;
+        int otherVisitedCount = 0;
+        for (auto i = 0; i < texDims_.x; i++) {
+            for (auto j = 0; j < texDims_.y; j++) {
+                if(!visitedPoints[i][j]){
+                    vec2 currPoint = vec2((float)i * (float)(dims.x - 1.0)/texDims_.x, (float)j * (float)(dims.y - 1.0) / texDims_.y);
+                    std::vector<vec2> currKernelPoints = Integrator::getWholeStreamlinePoints(vol.get(), currPoint, stepSize);
+                    for(int ind=0; ind<currKernelPoints.size(); ind++){
+                        float kernelSum = 0.0;
+                        
+                        if(currKernelPoints[ind].x * (float)texDims_.x / (dims.x - 1.0) < texDims_.x && currKernelPoints[ind].y * (float)texDims_.y / (dims.y - 1.0) < texDims_.y){
+                            int counter = 0;
+                            for(int kind=0; kind<kernelSize; kind++){
+                                if((ind - kind) >= 0){
+                                    float x = currKernelPoints[ind-kind].x * (float)texDims_.x / (dims.x - 1.0);
+                                    float y = currKernelPoints[ind-kind].y * (float)texDims_.y / (dims.y - 1.0);
+                                    kernelSum += Interpolator::sampleFromGrayscaleImage(tr, vec2(x,y));
+                                    counter++;
+                                }
+                                if((ind+kind) < currKernelPoints.size()){
+                                    float x = currKernelPoints[ind+kind].x * (float)texDims_.x / (dims.x - 1.0);
+                                    float y = currKernelPoints[ind+kind].y * (float)texDims_.y / (dims.y - 1.0);
+                                    kernelSum += Interpolator::sampleFromGrayscaleImage(tr, vec2(x,y));
+                                    counter++;
+                                }
+                                
+                            }
+                            int truncatedSum = std::round(kernelSum/counter);
+                            
+                            int pointX = round(currKernelPoints[ind].x * (float)texDims_.x / (dims.x - 1.0));
+                            int pointY = round(currKernelPoints[ind].y * (float)texDims_.y / (dims.y - 1.0));
+                            // LogProcessorInfo("PointX: " << pointX << " " << pointY);
+                            // LogProcessorInfo("Truncated sum: " << truncatedSum);
+                            // LogProcessorInfo("\n\n");
+                            
+                            if(!visitedPoints[pointX][pointY]) {
+                                lr->setFromDVec4(size2_t(pointX, pointY), dvec4(truncatedSum, truncatedSum, truncatedSum, 255));
+                                visitedPoints[pointX][pointY]=true;
+                            }else{
+                                otherVisitedCount++;
+                            }   
+                        }else{
+                            visitedCount++;
+                        }
+                    }
+                }
+            }
+        }
+        LogProcessorInfo("Revisited stuff: " << visitedCount << " other visited stuff: " << otherVisitedCount);
     }
 
    

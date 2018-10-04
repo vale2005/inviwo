@@ -18,6 +18,7 @@
 #include <inviwo/core/datastructures/image/imageram.h>
 #include <inviwo/core/properties/boolproperty.h>
 #include <inviwo/core/properties/ordinalproperty.h>
+#include <inviwo/core/properties/optionproperty.h>
 
 namespace inviwo {
 
@@ -78,6 +79,7 @@ public:
     IntProperty propKernelSize;
 	FloatProperty propMean;
 	FloatProperty propStandardDev;
+    TemplateOptionProperty<int> propLicType;
 // BoolProperty prop2;
 
 // Attributes

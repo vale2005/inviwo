@@ -59,5 +59,35 @@ namespace inviwo {
             return streamlinePoints;
             
     }
+
+    std::vector<vec2> Integrator::getWholeStreamlinePoints(const Volume* vol, vec2 startPoint, float stepSize){
+        //initialize vector for points along the stream line
+        std::vector<vec2> streamlinePoints;
+        
+        //initialize startpoints
+        vec2 currPointForward = startPoint;
+        vec2 currPointBackward = startPoint;
+        
+
+        vec2 nextPointBackward = rk4(vol, currPointBackward, stepSize*(-1.0));
+        while(!(currPointBackward == nextPointBackward)){
+            streamlinePoints.push_back(nextPointBackward);
+            currPointBackward = nextPointBackward;
+            nextPointBackward = rk4(vol, currPointBackward, stepSize*(-1.0));
+        }
+        std::reverse(streamlinePoints.begin(), streamlinePoints.end());
+        
+        streamlinePoints.push_back(startPoint);
+        
+        vec2 nextPointForward = rk4(vol, currPointForward, stepSize);
+        while(!(currPointForward == nextPointForward)){
+            streamlinePoints.push_back(nextPointForward);
+            currPointForward = nextPointForward;
+            nextPointForward = rk4(vol, currPointForward, stepSize);
+        }
+        
+        return streamlinePoints;
+    }
+    
         
 }  // namespace inviwo
