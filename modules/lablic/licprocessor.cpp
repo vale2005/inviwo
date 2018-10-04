@@ -166,8 +166,10 @@ void LICProcessor::process() {
                     std::vector<vec2> currKernelPoints = Integrator::getWholeStreamlinePoints(vol.get(), currPoint, stepSize);
                     for(int ind=0; ind<currKernelPoints.size(); ind++){
                         float kernelSum = 0.0;
+                        int pointX = round(currKernelPoints[ind].x * (float)texDims_.x / (dims.x - 1.0));
+                        int pointY = round(currKernelPoints[ind].y * (float)texDims_.y / (dims.y - 1.0));
                         
-                        if(currKernelPoints[ind].x * (float)texDims_.x / (dims.x - 1.0) < texDims_.x && currKernelPoints[ind].y * (float)texDims_.y / (dims.y - 1.0) < texDims_.y){
+                        if(!visitedPoints[pointX][pointY] && pointX < texDims_.x && pointY < texDims_.y ){
                             int counter = 0;
                             for(int kind=0; kind<kernelSize; kind++){
                                 if((ind - kind) >= 0){
@@ -186,22 +188,46 @@ void LICProcessor::process() {
                             }
                             int truncatedSum = std::round(kernelSum/counter);
                             
-                            int pointX = round(currKernelPoints[ind].x * (float)texDims_.x / (dims.x - 1.0));
-                            int pointY = round(currKernelPoints[ind].y * (float)texDims_.y / (dims.y - 1.0));
                             // LogProcessorInfo("PointX: " << pointX << " " << pointY);
                             // LogProcessorInfo("Truncated sum: " << truncatedSum);
                             // LogProcessorInfo("\n\n");
                             
-                            if(!visitedPoints[pointX][pointY]) {
-                                lr->setFromDVec4(size2_t(pointX, pointY), dvec4(truncatedSum, truncatedSum, truncatedSum, 255));
-                                visitedPoints[pointX][pointY]=true;
+                            float meanCol = propMean.get();
+                            float standardDev = propStandardDev.get();
+                            int enhancedCol = 0;
+                            int prettyMean = std::round(meanCol * 255.0);
+                            if (standardDev > 0.0){
+
+                                // The current color in the texture
+                                int currentCol = truncatedSum;
+                                // Make bright stuff brighter
+                                if (currentCol > prettyMean) {
+                                    enhancedCol = std::round(currentCol* (1.0 + standardDev));
+                                    // Out of bounds check
+                                    if (enhancedCol > 255.0) {
+                                        enhancedCol = 255.0;
+                                    }
+                                }
+                                // Make dark stuff darker
+                                if (currentCol <= prettyMean) {
+                                    enhancedCol = std::round(currentCol* (1.0 - standardDev));
+                                    // Out of bounds check
+                                    if (enhancedCol < 0) {
+                                        enhancedCol = 0;
+                                    }
+                                }
+                                lr->setFromDVec4(size2_t(pointX, pointY), dvec4(enhancedCol, enhancedCol, enhancedCol, 255)); 
                             }else{
-                                otherVisitedCount++;
-                            }   
-                        }else{
+                                lr->setFromDVec4(size2_t(pointX, pointY), dvec4(truncatedSum, truncatedSum, truncatedSum, 255));
+                            }
+                            visitedPoints[pointX][pointY]=true;
+                        }
+                        else{
                             visitedCount++;
                         }
                     }
+                }else{
+                    otherVisitedCount++;
                 }
             }
         }
