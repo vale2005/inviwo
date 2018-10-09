@@ -51,7 +51,7 @@ vec2 Interpolator::sampleFromField(const Volume* vol, const vec2& position) {
         f[i] /= cellSize[i];
     }
 
-    float size = std::sqrt(f[0]*f[0] + f[1]*f[1]);
+    float size = std::sqrt(f[1]*f[1] - f[0]*f[0]);
     f[0] = f[0] / size;
     f[1] = f[1] / size;
 

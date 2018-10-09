@@ -68,22 +68,28 @@ namespace inviwo {
         vec2 currPointForward = startPoint;
         vec2 currPointBackward = startPoint;
         
+        int MAX_POINT_COUNT = 500;
+
 
         vec2 nextPointBackward = rk4(vol, currPointBackward, stepSize*(-1.0));
-        while(!(currPointBackward == nextPointBackward)){
+        int pointCount = 0;
+        while(pointCount < MAX_POINT_COUNT && !(currPointBackward == nextPointBackward)){
             streamlinePoints.push_back(nextPointBackward);
             currPointBackward = nextPointBackward;
             nextPointBackward = rk4(vol, currPointBackward, stepSize*(-1.0));
+            pointCount++;
         }
         std::reverse(streamlinePoints.begin(), streamlinePoints.end());
         
         streamlinePoints.push_back(startPoint);
         
         vec2 nextPointForward = rk4(vol, currPointForward, stepSize);
-        while(!(currPointForward == nextPointForward)){
+        pointCount = 0;
+        while(pointCount < MAX_POINT_COUNT && !(currPointForward == nextPointForward)){
             streamlinePoints.push_back(nextPointForward);
             currPointForward = nextPointForward;
             nextPointForward = rk4(vol, currPointForward, stepSize);
+            pointCount++;
         }
         
         return streamlinePoints;
