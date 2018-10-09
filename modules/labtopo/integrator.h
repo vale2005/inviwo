@@ -13,6 +13,7 @@
 #include <labtopo/labtopomoduledefine.h>
 #include <inviwo/core/common/inviwo.h>
 #include <inviwo/core/datastructures/geometry/basicmesh.h>
+#include <inviwo/core/datastructures/volume/volume.h>
 #include <functional>
 
 namespace inviwo {
@@ -28,13 +29,10 @@ public:
 
 // Methods
 public:
+    static vec2 rk4(const Volume* vol, const vec2& position, float stepSize);
 
-    // TODO: Build on the last assignment by either copying the integrator code
-    // here and in the respective .cpp or include the header from that
-    // assignment with #include <lablic/integrator.h> in the files
-    // where it is needed.
-    // You may want to consider adding a helper function that computes an entire streamline
-    // if you have not done so for the last assignments already.
+    static std::vector<vec2> getWholeStreamlinePoints(const Volume* vol, vec2 startPoint, float stepSize);
+      
 };
 
 }  // namespace inviwo

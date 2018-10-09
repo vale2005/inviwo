@@ -146,11 +146,10 @@ void StreamlineIntegrator::process() {
                 // Draw start point
                 float x1 = (rand() % ((dims.x-1) * 1000)) / 1000.0;
                 float y1 = (rand() % ((dims.y-1) * 1000)) / 1000.0;
-                LogProcessorInfo("Points: " << x1 <<  " " << y1); 
                 vec2 startPoint = vec2(x1, y1);
                 vertices.push_back({ vec3(startPoint.x / (dims.x - 1), startPoint.y / (dims.y - 1), 0),
                     vec3(0), vec3(0), vec4(0, 0, 1, 1) });
-                indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
+                // indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
                 indexBufferLines->add(static_cast<std::uint32_t>(vertices.size()));
 
 
@@ -164,11 +163,10 @@ void StreamlineIntegrator::process() {
                     auto indexBufferPoints = mesh->addIndexBuffer(DrawType::Points, ConnectivityType::None);
                     auto indexBufferLines = mesh->addIndexBuffer(DrawType::Lines, ConnectivityType::Strip);
                     float y1 = (float)j / propYSeedCount.get() * (dims.y);
-                    LogProcessorInfo("Points: " << x1 <<  " " << y1); 
                     vec2 startPoint = vec2(x1, y1);
                     vertices.push_back({ vec3(startPoint.x / (dims.x - 1), startPoint.y / (dims.y - 1), 0),
                         vec3(0), vec3(0), vec4(0, 0, 1, 1) });
-                    indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
+                    // indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
                     indexBufferLines->add(static_cast<std::uint32_t>(vertices.size()));
 
 

@@ -96,13 +96,13 @@ void Integrator::drawLineSegmentAndPoints(const vec2& v1, const vec2& v2,
                                       const vec4& color) {
     // Add first vertex
     indexBufferLines->add(static_cast<std::uint32_t>(vertices.size()));
-    indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
+    // indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
     // A vertex has a position, a normal, a texture coordinate and a color
     // we do not use normal or texture coordinate, but still have to specify them
     vertices.push_back({vec3(v1[0]/(dims.x-1), v1[1]/(dims.y-1), 0), vec3(0), vec3(0), color});
     // Add second vertex
     indexBufferLines->add(static_cast<std::uint32_t>(vertices.size()));
-    indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
+    // indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
     vertices.push_back({vec3(v2[0]/(dims.x-1), v2[1]/(dims.y-1), 0), vec3(0), vec3(0), color});
 }
 } // namespace

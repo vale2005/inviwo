@@ -69,6 +69,8 @@ public:
     virtual void process() override;
 
     //TODO: You may want to declare additional functions here, e.g., extractCriticalPoints.
+    bool checkZeroCrossing(std::vector<vec2> gridEdges);
+    vec2 getCriticalPointInGridCell(const Volume* vol, vec2 position, float distance);
 
     // Ports
   public:
