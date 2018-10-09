@@ -90,8 +90,8 @@ void Topology::process()
                 LogProcessorInfo("Zero crossing between point: " << x << " " << y);
                 float xCoord = (float)zeroPosInCurrCell.x / (dims.x - 1);
                 float yCoord = (float)zeroPosInCurrCell.y / (dims.y - 1);
-                vertices.push_back({vec3(xCoord, yCoord, 0), vec3(0, 0, 1), vec3(xCoord, yCoord, 0), vec4(0,0,0,1)});
                 indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
+                vertices.push_back({vec3(xCoord, yCoord, 0), vec3(0, 0, 1), vec3(xCoord, yCoord, 0), vec4(0,0,0,1)});
             }
 
         //     currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x, y)));
@@ -115,7 +115,7 @@ void Topology::process()
 }
 
 vec2 Topology::getCriticalPointInGridCell(const Volume* vol, vec2 position, float distance = 1.0f){
-    if(distance < 0.000005){
+    if(distance < 0.0005){
         return position;
     }
 
@@ -170,8 +170,12 @@ vec2 Topology::getCriticalPointInGridCell(const Volume* vol, vec2 position, floa
 bool Topology::checkZeroCrossing(std::vector<vec2> gridEdges){
     for(int i=0; i < gridEdges.size(); ++i){
         for(int j=i+1; j < gridEdges.size(); ++j){
-            if((gridEdges[i].x) < 0 != (gridEdges[j].x < 0) &&
-               (gridEdges[i].y) < 0 != (gridEdges[j].y < 0)){
+            if((gridEdges[i].x) <= 0 != (gridEdges[j].x <= 0) &&
+               (gridEdges[i].y) <= 0 != (gridEdges[j].y <= 0)){
+                   return true;
+               }
+            if((gridEdges[i].x) >= 0 != (gridEdges[j].x >= 0) &&
+               (gridEdges[i].y) >= 0 != (gridEdges[j].y >= 0)){
                    return true;
                }
         }
