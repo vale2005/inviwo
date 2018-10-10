@@ -87,26 +87,16 @@ void Topology::process()
         for (int y = 0; y < dims[1]-1; ++y){
             vec2 zeroPosInCurrCell = getCriticalPointInGridCell(vol.get(), vec2(x,y), 1.0f);
             if(zeroPosInCurrCell != vec2(-1, -1)){
-                LogProcessorInfo("Zero crossing between point: " << x << " " << y);
+                vec4 color = classifyPoint(vol.get(), zeroPosInCurrCell);
+
+
                 float xCoord = (float)zeroPosInCurrCell.x / (dims.x - 1);
                 float yCoord = (float)zeroPosInCurrCell.y / (dims.y - 1);
-                indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
-                vertices.push_back({vec3(xCoord, yCoord, 0), vec3(0, 0, 1), vec3(xCoord, yCoord, 0), vec4(0,0,0,1)});
-            }
 
-        //     currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x, y)));
-        //     currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x+1, y)));
-        //     currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x, y+1)));
-        //     currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x+1, y+1)));
-        //     LogProcessorInfo("Curr grid edges: " << currGridEdges[0] << " " << currGridEdges[1] 
-        //                      << " " << currGridEdges[2] << " " << currGridEdges[3]);
-        //     if(checkZeroCrossing(currGridEdges)){
-        //         LogProcessorInfo("Zero crossing between point: " << x << " " << y);
-        //         flo xCoord = (float)x / (dims.x - 1);
-        //         float yCoord = (float)y / (dims.y - 1);
-        //         vertices.push_back({vec3(xCoord, yCoord, 0), vec3(0, 0, 1), vec3(xCoord, yCoord, 0), vec4(0,0,0,1)});
-        //         indexBufferPoints->add(static_cast<atstd::uint32_t>(vertices.size()));
-        //     }
+                indexBufferPoints->add(static_cast<std::uint32_t>(vertices.size()));
+                vertices.push_back({vec3(xCoord, yCoord, 0), vec3(1, 1, 1), vec3(1, 1, 1), color});
+            }
+            // LogProcessorInfo("\n\n\n");
         }
     }
         
@@ -115,7 +105,7 @@ void Topology::process()
 }
 
 vec2 Topology::getCriticalPointInGridCell(const Volume* vol, vec2 position, float distance = 1.0f){
-    if(distance < 0.0005){
+    if(distance < 0.00000005){
         return position;
     }
 
@@ -124,9 +114,21 @@ vec2 Topology::getCriticalPointInGridCell(const Volume* vol, vec2 position, floa
 
     std::vector<vec2> currGridEdges;
     currGridEdges.push_back(Interpolator::sampleFromField(vol, vec2(x, y)));
+    // LogProcessorInfo("Value : " << currGridEdges[0] << " position " << vec2(x,y));
+    if(isZero(currGridEdges[0])) return vec2(x, y);
+    
     currGridEdges.push_back(Interpolator::sampleFromField(vol, vec2(x+distance, y)));
+    // LogProcessorInfo("Value : " << currGridEdges[1] << " position " << vec2(x+distance,y));
+    if(isZero(currGridEdges[1])) return vec2(x+distance, y);
+    
     currGridEdges.push_back(Interpolator::sampleFromField(vol, vec2(x, y+distance)));
+    // LogProcessorInfo("Value : " << currGridEdges[2] << " position " << vec2(x,y+distance));
+    if(isZero(currGridEdges[2])) return vec2(x, y+distance);
+    
     currGridEdges.push_back(Interpolator::sampleFromField(vol, vec2(x+distance, y+distance)));
+    // LogProcessorInfo("Value : " << currGridEdges[3] << " position " << vec2(x+distance, y+distance));
+    if(isZero(currGridEdges[3])) return vec2(x+distance, y+distance);
+    
     if(checkZeroCrossing(currGridEdges)){
         distance = distance / 2.0;
         vec2 p1 = getCriticalPointInGridCell(vol, vec2(x, y), distance);
@@ -143,30 +145,6 @@ vec2 Topology::getCriticalPointInGridCell(const Volume* vol, vec2 position, floa
     }
 }
 
-// getCellPoints(vec2 startPosition, float distance, int quadrant){
-//     float x = startPosition.x;
-//     float y = startPosition.y;
-//     if(quadrant == 0){
-//         currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x, y)));           
-//         currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x+distance, y)));
-//         currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x, y+distance)));
-//         currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x+distance, y+distance)));
-//     }
-//     else if(quadrant == 1){
-//         currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x-distance, y)));           
-//         currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x+distance, y)));
-//         currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x-distance, y+distance)));
-//         currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x, y+distance)));
-//     }
-//     else if(quadrant == 2){
-//         currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x, y-distance)));           
-//         currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x+distance, y-distance)));
-//         currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x, y)));
-//         currGridEdges.push_back(Interpolator::sampleFromField(vol.get(), vec2(x+distance, y)));
-//     }
-// }
-
-
 bool Topology::checkZeroCrossing(std::vector<vec2> gridEdges){
     for(int i=0; i < gridEdges.size(); ++i){
         for(int j=i+1; j < gridEdges.size(); ++j){
@@ -181,6 +159,55 @@ bool Topology::checkZeroCrossing(std::vector<vec2> gridEdges){
         }
     }
     return false;
+}
+
+vec4 Topology::classifyPoint(const Volume* vol, vec2 position){
+
+    mat2 jacobian = Interpolator::sampleJacobian(vol, position);
+    inviwo::util::EigenResult eigenRes = inviwo::util::eigenAnalysis(jacobian);
+
+    float r1 = eigenRes.eigenvaluesRe[0];
+    float r2 = eigenRes.eigenvaluesRe[1];
+
+    float i1 = eigenRes.eigenvaluesIm[0];
+    float i2 = eigenRes.eigenvaluesIm[1];
+    
+    TypeCP pointType;
+
+    if(isZero(eigenRes.eigenvaluesRe)){
+        LogProcessorInfo("Center " << position);
+        pointType = TypeCP::Center;
+    }
+    else if(r1 < 0){
+        if(r2 > 0){
+            pointType = TypeCP::Saddle;
+        }
+        else if(r2 == r1 && i1 == -i2 && i1 != 0){
+            pointType = TypeCP::AttractingFocus;
+        }
+        else if(r2 < 0 && i1 == 0 && i1 == i2 ){
+            pointType = TypeCP::AttractingNode;
+        }
+    }
+    else if(r1 > 0){
+        if(r2 < 0){
+            pointType = TypeCP::Saddle;
+        }
+        else if(r2 > 0 && i1 == 0 && i1 == i2){
+            pointType = TypeCP::RepellingNode;
+        }
+        else if(r1 == r2 && i1 != 0 && i1 == -i2){
+            pointType = TypeCP::RepellingFocus;
+        }
+    }
+
+    int pointTypeInt = static_cast<int>(pointType);
+
+    return ColorsCP[pointTypeInt];
+}
+
+bool Topology::isZero(vec2 vec){
+    return abs(vec.x) < 0.01 && abs(vec.y) < 0.01;
 }
 
 }// namespace

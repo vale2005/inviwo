@@ -170,7 +170,7 @@ void StreamlineIntegrator::process() {
                     indexBufferLines->add(static_cast<std::uint32_t>(vertices.size()));
 
 
-                    doIntegration(startPoint, dims, vr, indexBufferLines, indexBufferPoints, vertices, vec4(0, 0, 1, 1));   
+                    doIntegration(startPoint, dims, vr, indexBufferLines, indexBufferPoints, vertices, vec4(0, 0, 0, 1));   
                 }
             }
         }
@@ -186,26 +186,29 @@ void StreamlineIntegrator::doIntegration(vec2 startPoint, size3_t dims, const Vo
                                       std::vector<BasicMesh::Vertex>& vertices, const vec4& color)
 {
     vec2 prevPoint = startPoint;
-    float stepSize = (propDirection.get() == 0) ? propStepSize.get() : - propStepSize.get();
-    float arcLength = 0.0;
-    for(int i=0; i<propNumberOfSteps.get(); i++){ 
-        vec2 nextPoint = rk4(vr, dims, prevPoint, stepSize);
-        if (propStopAtZero.get() &&
-            (nextPoint[0] < 0 || nextPoint[0] > dims[0] - 1 || 
-            nextPoint[1] < 0 || nextPoint[1] > dims[1] - 1)) break;
-        Integrator::drawLineSegmentAndPoints(prevPoint, nextPoint, dims, indexBufferLines, 
-                                            indexBufferPoints, vertices, color);
+    float stepSize = propStepSize.get();
+    for(int i=0; i<2; i++){
+        float arcLength = 0.0;
+        stepSize = -stepSize;
+        for(int i=0; i<propNumberOfSteps.get(); i++){ 
+            vec2 nextPoint = rk4(vr, dims, prevPoint, stepSize);
+            if (propStopAtZero.get() &&
+                (nextPoint[0] < 0 || nextPoint[0] > dims[0] - 1 || 
+                nextPoint[1] < 0 || nextPoint[1] > dims[1] - 1)) break;
+            Integrator::drawLineSegmentAndPoints(prevPoint, nextPoint, dims, indexBufferLines, 
+                                                indexBufferPoints, vertices, color);
+            
+            float velocity = sqrt(pow(nextPoint.x-prevPoint.x, 2) + pow(nextPoint.y-prevPoint.y, 2));
+            arcLength += velocity;
+
+            if(velocity <= propMinVelocity.get()) break;
+            if(arcLength >= propArcLength.get()) break;
+            if(propStopAtZero.get() && prevPoint.x == nextPoint.x && prevPoint.y == nextPoint.y) break;
         
-        float velocity = sqrt(pow(nextPoint.x-prevPoint.x, 2) + pow(nextPoint.y-prevPoint.y, 2));
-        arcLength += velocity;
-
-        if(velocity <= propMinVelocity.get()) break;
-        if(arcLength >= propArcLength.get()) break;
-        if(propStopAtZero.get() && prevPoint.x == nextPoint.x && prevPoint.y == nextPoint.y) break;
-       
-        prevPoint = vec3(nextPoint.x, nextPoint.y, 0);
+            prevPoint = vec3(nextPoint.x, nextPoint.y, 0);
+        }
     }
-
+   
 
 }
 

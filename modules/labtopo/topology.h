@@ -71,6 +71,8 @@ public:
     //TODO: You may want to declare additional functions here, e.g., extractCriticalPoints.
     bool checkZeroCrossing(std::vector<vec2> gridEdges);
     vec2 getCriticalPointInGridCell(const Volume* vol, vec2 position, float distance);
+    vec4 classifyPoint(const Volume* vol, vec2 position);
+    bool isZero(vec2 vec);
 
     // Ports
   public:
